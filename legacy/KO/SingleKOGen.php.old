@@ -1,0 +1,126 @@
+<?php
+
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/**
+ * Description of SingleKOGen
+ *
+ * @author jurrien
+ */
+class SingleKOGen extends TournamentType {
+    
+    private $teamList;
+    
+    private $myTreeRoot;
+    private $treeDepth;
+    private $additionalTeams;
+
+    /* ----------------------------------------------------------------------- */
+    public function genMatches() {
+        $this->reqTeamList();
+        $this->calcDepth();
+        $this->myTreeRoot = $this->genTree();
+        $firstRound = $this->myTreeRoot->getLastRound();
+        
+//        foreach($this->teamList as $k => $t)
+//            echo "$k => $t</br>";
+//        
+        $prevDepth = $firstRound[0]->getMyDepth();
+        $i = 0;
+        foreach($firstRound as $match) {
+            $currDepth = $match->getMyDepth();
+//            echo $i . ": " .$this->teamList[$i] . " - " . (isset($this->teamList[$i + 1]) ? $this->teamList[$i + 1] : 0)
+//                    . " in round " .($match->getTreeDepth() - $match->getMyDepth() + 1) . "</br>";
+//            
+            if( ($currDepth != $prevDepth) && ($this->additionalTeams % 2 != 0)) {
+                $match->setMatch(new Match(0, $this->teamList[$i]));
+                $i ++;
+            }
+            else {
+                $match->setMatch(new Match($this->teamList[$i], $this->teamList[$i + 1]));
+                $i += 2;
+            }
+            $match->getMatch()->setRound($match->getTreeDepth() - $match->getMyDepth() + 1);
+            $match->getMatch()->setType("ko");
+            $match->getMatch()->setIndex($match->getMyIndex());
+            $match->getMatch()->setPool(0 - $match->getMyDepth()- 1);
+            $prevDepth = $currDepth;
+        }
+        
+        for($i=$currDepth; $i>=0; $i--) {
+            $round = $this->myTreeRoot->getRound($i);
+            foreach($round as $match) {
+                if($match->getMatch() == null) {
+                    $match->setMatch(new Match(0, 0));
+                    $match->getMatch()->setRound($match->getTreeDepth() - $match->getMyDepth() + 1);
+                    $match->getMatch()->setType("ko");
+                    $match->getMatch()->setIndex($match->getMyIndex());
+                    $match->getMatch()->setPool(0 - $match->getMyDepth()- 1);
+                }
+            }
+        }
+        
+        $this->myTreeRoot->setMatchDependency();
+    }
+
+    /* ----------------------------------------------------------------------- */
+    public function getMatchList() {
+        $matchList = array();
+        for($i=$this->myTreeRoot->getTreeDepth() + 1; $i>=0; $i--) {
+            $list = $this->myTreeRoot->getRound($i);
+            foreach($list as $match) {
+                $matchList[] = $match->getMatch();
+            }
+        }
+        
+        return $matchList;
+    }
+    
+    /* ----------------------------------------------------------------------- */
+    public function getTreeRoot() {
+        return $this->myTreeRoot;
+    }
+    
+    /* ----------------------------------------------------------------------- */
+    public function updateNextRound() {
+        $this->genMatches();
+        return $this->myTreeRoot->updateNextRound($this->myTourID);
+    }
+    
+    /* ----------------------------------------------------------------------- */
+    private function reqTeamList() {
+        $list = $this->myConnection->getRestTableContant("teamlist",
+                false, null, "tourID='$this->myTourID'", " ORDER by buy");
+        
+        $this->teamList = array();
+        while($team = mysql_fetch_array($list)) {
+            $this->teamList[] = $team['teamID'];
+        }
+    }
+    
+    /* ----------------------------------------------------------------------- */
+    private function calcDepth() {
+        $rSizes = array(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024);
+        
+        $i = 0;
+        while(count($this->teamList) > $rSizes[$i]) {
+            $i ++;
+        }
+        
+        /** @NOTE a node represents a match counting two teams */
+        $i --;
+        
+        $this->treeDepth = $i - 1;
+        $this->additionalTeams = (count($this->teamList) - $rSizes[$i]);
+    }
+    
+    /* ----------------------------------------------------------------------- */
+    private function genTree() {
+        return new TreeNode($this->treeDepth, 0, 0, $this->additionalTeams);
+    }
+}
+
+?>

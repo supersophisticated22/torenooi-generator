@@ -5,6 +5,8 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -24,6 +26,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'current_organization_id',
     ];
 
     /**
@@ -49,6 +52,35 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function organizations(): BelongsToMany
+    {
+        return $this->belongsToMany(Organization::class)
+            ->withTimestamps();
+    }
+
+    public function currentOrganizationRelation(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class, 'current_organization_id');
+    }
+
+    public function currentOrganization(): ?Organization
+    {
+        $organization = $this->currentOrganizationRelation()->first();
+
+        if ($organization !== null && $this->belongsToOrganizationId($organization->id)) {
+            return $organization;
+        }
+
+        return $this->organizations()->first();
+    }
+
+    public function belongsToOrganizationId(int $organizationId): bool
+    {
+        return $this->organizations()
+            ->whereKey($organizationId)
+            ->exists();
     }
 
     /**

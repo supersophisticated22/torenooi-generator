@@ -2,9 +2,14 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use App\Policies\TenantRecordPolicy;
+use App\Tenancy\CurrentOrganization;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -15,7 +20,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(CurrentOrganization::class);
+        $this->app->singleton(TenantRecordPolicy::class);
     }
 
     /**
@@ -24,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureAuthorization();
     }
 
     /**
@@ -46,5 +53,12 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+    }
+
+    protected function configureAuthorization(): void
+    {
+        Gate::define('manage-tenant-record', function (User $user, Model $model): bool {
+            return app(TenantRecordPolicy::class)->manage($user, $model);
+        });
     }
 }
