@@ -5,6 +5,7 @@ namespace App\Livewire\Categories;
 use App\Models\Category;
 use App\Models\Sport;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
@@ -17,6 +18,11 @@ class Create extends Component
     public string $name = '';
 
     public ?int $sport_id = null;
+
+    public function mount(): void
+    {
+        Gate::authorize('create-tenant-record', Category::class);
+    }
 
     public function save(): void
     {

@@ -22,19 +22,13 @@ class PlayerSeeder extends Seeder
 
         foreach ($teams as $team) {
             for ($index = 1; $index <= 12; $index++) {
-                $email = sprintf(
-                    '%s-player-%02d@demo.test',
-                    str($team->name)->slug()->value(),
-                    $index,
-                );
-
                 $player = Player::query()->updateOrCreate(
                     [
                         'organization_id' => $organization->id,
-                        'email' => $email,
+                        'team_id' => $team->id,
+                        'number' => $index,
                     ],
                     [
-                        'team_id' => $team->id,
                         'first_name' => 'Player',
                         'last_name' => sprintf('%s %02d', $team->short_name ?? 'T', $index),
                     ],

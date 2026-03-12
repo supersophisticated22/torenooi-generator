@@ -5,6 +5,7 @@ namespace App\Livewire\Events;
 use App\Domain\Tournaments\Enums\EventStatus;
 use App\Models\Event;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -18,6 +19,11 @@ class Create extends Component
     public ?string $ends_at = null;
 
     public string $status = 'draft';
+
+    public function mount(): void
+    {
+        Gate::authorize('create-tenant-record', Event::class);
+    }
 
     public function save(): void
     {

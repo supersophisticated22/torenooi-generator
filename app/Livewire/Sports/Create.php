@@ -4,6 +4,7 @@ namespace App\Livewire\Sports;
 
 use App\Models\Sport;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -18,6 +19,11 @@ class Create extends Component
     public int $draw_points = 1;
 
     public int $loss_points = 0;
+
+    public function mount(): void
+    {
+        Gate::authorize('create-tenant-record', Sport::class);
+    }
 
     public function save(): void
     {

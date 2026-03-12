@@ -111,7 +111,9 @@ class Players extends Component
     #[Computed]
     public function team(): Team
     {
-        return Team::query()->with(['players' => fn ($query) => $query->orderBy('players.first_name')])->findOrFail($this->teamId);
+        return Team::query()
+            ->with(['players' => fn ($query) => $query->orderBy('players.number')->orderBy('players.first_name')])
+            ->findOrFail($this->teamId);
     }
 
     #[Computed]
@@ -126,6 +128,7 @@ class Players extends Component
         return Player::query()
             ->forOrganization($organization)
             ->whereNotIn('id', $this->team->players->pluck('id')->all())
+            ->orderBy('number')
             ->orderBy('first_name')
             ->orderBy('last_name')
             ->get();

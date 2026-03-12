@@ -40,6 +40,7 @@ class Index extends Component
 
         return Player::query()
             ->forOrganization($organization)
+            ->orderBy('number')
             ->orderBy('first_name')
             ->orderBy('last_name')
             ->get();

@@ -4,6 +4,7 @@ namespace App\Livewire\Players;
 
 use App\Models\Player;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -15,7 +16,12 @@ class Create extends Component
 
     public string $last_name = '';
 
-    public ?string $email = null;
+    public ?int $number = null;
+
+    public function mount(): void
+    {
+        Gate::authorize('create-tenant-record', Player::class);
+    }
 
     public function save(): void
     {
@@ -28,7 +34,7 @@ class Create extends Component
         $validated = $this->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255', Rule::unique('players', 'email')->where('organization_id', $organization->id)],
+            'number' => ['required', 'integer', 'min:1', Rule::unique('players', 'number')->where('organization_id', $organization->id)],
         ]);
 
         Player::query()->create([
@@ -36,7 +42,7 @@ class Create extends Component
             'team_id' => null,
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
-            'email' => $validated['email'],
+            'number' => $validated['number'],
         ]);
 
         $this->redirect(route('players.index', absolute: false));

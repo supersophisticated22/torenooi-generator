@@ -45,7 +45,7 @@ class Score extends Component
 
     public function mount(TournamentMatch $match): void
     {
-        Gate::authorize('manage-tenant-record', $match);
+        Gate::authorize('view-tenant-record', $match);
 
         $this->matchId = $match->id;
         $this->home_score = $match->result?->home_score ?? 0;
@@ -56,7 +56,7 @@ class Score extends Component
     {
         $match = TournamentMatch::query()->with('result')->findOrFail($this->matchId);
 
-        Gate::authorize('manage-tenant-record', $match);
+        Gate::authorize('manage-match-scoring', $match);
 
         $validated = $this->validate([
             'home_score' => ['required', 'integer', 'min:0', 'max:999'],
@@ -92,7 +92,7 @@ class Score extends Component
         $organization = Auth::user()?->currentOrganization();
         $match = TournamentMatch::query()->with(['homeTeam', 'awayTeam'])->findOrFail($this->matchId);
 
-        Gate::authorize('manage-tenant-record', $match);
+        Gate::authorize('manage-match-scoring', $match);
 
         if ($organization === null) {
             abort(403);
@@ -160,7 +160,7 @@ class Score extends Component
     {
         $match = TournamentMatch::query()->findOrFail($this->matchId);
 
-        Gate::authorize('manage-tenant-record', $match);
+        Gate::authorize('manage-match-scoring', $match);
 
         MatchEvent::query()
             ->where('id', $eventId)
@@ -175,7 +175,7 @@ class Score extends Component
         $organization = Auth::user()?->currentOrganization();
         $match = TournamentMatch::query()->with(['tournament', 'referees'])->findOrFail($this->matchId);
 
-        Gate::authorize('manage-tenant-record', $match);
+        Gate::authorize('manage-event-operations', $match);
 
         if ($organization === null) {
             abort(403);
@@ -208,7 +208,7 @@ class Score extends Component
     public function removeReferee(int $refereeId): void
     {
         $match = TournamentMatch::query()->with('referees')->findOrFail($this->matchId);
-        Gate::authorize('manage-tenant-record', $match);
+        Gate::authorize('manage-event-operations', $match);
 
         $match->referees()->detach($refereeId);
 
@@ -222,7 +222,7 @@ class Score extends Component
     {
         $match = TournamentMatch::query()->with(['result', 'tournament'])->findOrFail($this->matchId);
 
-        Gate::authorize('manage-tenant-record', $match);
+        Gate::authorize('manage-match-scoring', $match);
 
         if ($match->result === null) {
             $this->addError('result', 'Enter the match score before completing the match.');
@@ -317,12 +317,16 @@ class Score extends Component
                     ->whereIn('team_id', $teamIds)
                     ->orWhereHas('teams', fn (Builder $teamQuery): Builder => $teamQuery->whereIn('teams.id', $teamIds));
             })
+            ->orderBy('number')
             ->orderBy('first_name')
             ->orderBy('last_name')
             ->get()
             ->map(fn (Player $player): array => [
                 'value' => $player->id,
-                'label' => trim($player->first_name.' '.$player->last_name),
+                'label' => trim(
+                    ($player->number !== null ? '#'.$player->number.' - ' : '')
+                    .$player->first_name.' '.$player->last_name
+                ),
             ])
             ->values()
             ->all();

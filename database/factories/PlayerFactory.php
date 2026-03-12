@@ -21,7 +21,7 @@ class PlayerFactory extends Factory
             'team_id' => Team::factory(),
             'first_name' => fake()->firstName(),
             'last_name' => fake()->lastName(),
-            'email' => fake()->unique()->safeEmail(),
+            'number' => fake()->unique()->numberBetween(1, 9999),
         ];
     }
 }

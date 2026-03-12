@@ -20,7 +20,7 @@ class Player extends Model
         'team_id',
         'first_name',
         'last_name',
-        'email',
+        'number',
     ];
 
     public function organization(): BelongsTo

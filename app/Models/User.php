@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Domain\Auth\Enums\OrganizationRole;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -27,6 +28,7 @@ class User extends Authenticatable
         'email',
         'password',
         'current_organization_id',
+        'is_platform_admin',
     ];
 
     /**
@@ -51,12 +53,14 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_platform_admin' => 'bool',
         ];
     }
 
     public function organizations(): BelongsToMany
     {
         return $this->belongsToMany(Organization::class)
+            ->withPivot('role')
             ->withTimestamps();
     }
 
@@ -78,9 +82,50 @@ class User extends Authenticatable
 
     public function belongsToOrganizationId(int $organizationId): bool
     {
+        if ($this->isPlatformAdmin()) {
+            return true;
+        }
+
         return $this->organizations()
             ->whereKey($organizationId)
             ->exists();
+    }
+
+    public function isPlatformAdmin(): bool
+    {
+        return (bool) $this->is_platform_admin;
+    }
+
+    public function organizationRole(int $organizationId): ?OrganizationRole
+    {
+        if ($this->isPlatformAdmin()) {
+            return OrganizationRole::OrganizationAdmin;
+        }
+
+        $role = $this->organizations()
+            ->whereKey($organizationId)
+            ->value('organization_user.role');
+
+        if (! is_string($role) || $role === '') {
+            return null;
+        }
+
+        return OrganizationRole::tryFrom($role);
+    }
+
+    public function hasOrganizationRole(int $organizationId, OrganizationRole ...$roles): bool
+    {
+        if ($this->isPlatformAdmin()) {
+            return true;
+        }
+
+        $currentRole = $this->organizationRole($organizationId);
+
+        if ($currentRole === null) {
+            return false;
+        }
+
+        return in_array($currentRole, $roles, true);
     }
 
     /**

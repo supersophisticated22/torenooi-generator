@@ -20,7 +20,7 @@ class Edit extends Component
 
     public string $last_name = '';
 
-    public ?string $email = null;
+    public ?int $number = null;
 
     public function mount(Player $player): void
     {
@@ -29,7 +29,7 @@ class Edit extends Component
         $this->playerId = $player->id;
         $this->first_name = $player->first_name;
         $this->last_name = $player->last_name;
-        $this->email = $player->email;
+        $this->number = $player->number;
     }
 
     public function save(): void
@@ -46,18 +46,18 @@ class Edit extends Component
         $validated = $this->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'email' => [
-                'nullable',
-                'email',
-                'max:255',
-                Rule::unique('players', 'email')->where('organization_id', $organization->id)->ignore($player->id),
+            'number' => [
+                'required',
+                'integer',
+                'min:1',
+                Rule::unique('players', 'number')->where('organization_id', $organization->id)->ignore($player->id),
             ],
         ]);
 
         $player->update([
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
-            'email' => $validated['email'],
+            'number' => $validated['number'],
         ]);
 
         $this->redirect(route('players.index', absolute: false));

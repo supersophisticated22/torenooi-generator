@@ -32,7 +32,7 @@ class Show extends Component
 
     public function mount(Tournament $tournament): void
     {
-        Gate::authorize('manage-tenant-record', $tournament);
+        Gate::authorize('view-tenant-record', $tournament);
 
         $this->tournamentId = $tournament->id;
 
@@ -53,7 +53,7 @@ class Show extends Component
     public function generateMatches(GenerateTournamentMatches $generateTournamentMatches): void
     {
         $tournament = Tournament::query()->findOrFail($this->tournamentId);
-        Gate::authorize('manage-tenant-record', $tournament);
+        Gate::authorize('manage-event-operations', $tournament);
 
         try {
             $generateTournamentMatches->handle($tournament, $this->forceRegenerate);
@@ -68,7 +68,7 @@ class Show extends Component
         $organization = Auth::user()?->currentOrganization();
         $tournament = Tournament::query()->with(['sport', 'referees'])->findOrFail($this->tournamentId);
 
-        Gate::authorize('manage-tenant-record', $tournament);
+        Gate::authorize('manage-event-operations', $tournament);
 
         if ($organization === null) {
             abort(403);
@@ -102,7 +102,7 @@ class Show extends Component
     public function removeReferee(int $refereeId): void
     {
         $tournament = Tournament::query()->findOrFail($this->tournamentId);
-        Gate::authorize('manage-tenant-record', $tournament);
+        Gate::authorize('manage-event-operations', $tournament);
 
         $tournament->referees()->detach($refereeId);
     }

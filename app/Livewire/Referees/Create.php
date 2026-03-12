@@ -5,6 +5,7 @@ namespace App\Livewire\Referees;
 use App\Models\Referee;
 use App\Models\Sport;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -22,6 +23,11 @@ class Create extends Component
     public ?string $phone = null;
 
     public ?int $sport_id = null;
+
+    public function mount(): void
+    {
+        Gate::authorize('create-tenant-record', Referee::class);
+    }
 
     public function save(): void
     {

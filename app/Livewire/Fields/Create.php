@@ -6,6 +6,7 @@ use App\Models\Field;
 use App\Models\Sport;
 use App\Models\Venue;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -21,6 +22,11 @@ class Create extends Component
     public ?int $venue_id = null;
 
     public ?int $sport_id = null;
+
+    public function mount(): void
+    {
+        Gate::authorize('create-tenant-record', Field::class);
+    }
 
     public function save(): void
     {

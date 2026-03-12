@@ -6,7 +6,7 @@
         <flux:select wire:model="player_id" :label="__('Player')" required>
             <option value="">{{ __('Select player') }}</option>
             @foreach ($this->availablePlayers as $player)
-                <option value="{{ $player->id }}">{{ $player->first_name }} {{ $player->last_name }}</option>
+                <option value="{{ $player->id }}">{{ $player->number ? '#'.$player->number.' - ' : '' }}{{ $player->first_name }} {{ $player->last_name }}</option>
             @endforeach
         </flux:select>
 
@@ -29,7 +29,7 @@
             <tbody>
                 @forelse ($this->team->players as $player)
                     <tr class="border-t border-neutral-200 dark:border-neutral-700">
-                        <td class="px-4 py-3">{{ $player->first_name }} {{ $player->last_name }}</td>
+                        <td class="px-4 py-3">{{ $player->number ? '#'.$player->number.' - ' : '' }}{{ $player->first_name }} {{ $player->last_name }}</td>
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-2">
                                 <flux:input wire:model="jerseyNumbers.{{ $player->id }}" type="number" min="0" class="max-w-28" />

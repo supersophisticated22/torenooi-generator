@@ -115,7 +115,7 @@ test('player can be created and updated', function () {
     Livewire::test(PlayerCreate::class)
         ->set('first_name', 'Alex')
         ->set('last_name', 'Stone')
-        ->set('email', 'alex@example.com')
+        ->set('number', 1)
         ->call('save')
         ->assertHasNoErrors();
 
@@ -127,14 +127,14 @@ test('player can be created and updated', function () {
     Livewire::test(PlayerEdit::class, ['player' => $player])
         ->set('first_name', 'Alec')
         ->set('last_name', 'Stone')
-        ->set('email', 'alec@example.com')
+        ->set('number', 2)
         ->call('save')
         ->assertHasNoErrors();
 
     $player->refresh();
 
     expect($player->first_name)->toBe('Alec')
-        ->and($player->email)->toBe('alec@example.com');
+        ->and($player->number)->toBe(2);
 });
 
 test('team player assignment can be created and updated with jersey number', function () {
@@ -147,7 +147,7 @@ test('team player assignment can be created and updated with jersey number', fun
     $player = Player::factory()->create([
         'organization_id' => $this->organization->id,
         'team_id' => null,
-        'email' => 'team-assignment@example.com',
+        'number' => 99,
     ]);
 
     Livewire::test(TeamPlayers::class, ['team' => $team])

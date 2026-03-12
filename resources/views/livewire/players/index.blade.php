@@ -21,7 +21,7 @@
             <thead class="bg-neutral-50 dark:bg-neutral-900/50">
                 <tr>
                     <th class="px-4 py-3">{{ __('Name') }}</th>
-                    <th class="px-4 py-3">{{ __('Email') }}</th>
+                    <th class="px-4 py-3">{{ __('Number') }}</th>
                     <th class="px-4 py-3">{{ __('Actions') }}</th>
                 </tr>
             </thead>
@@ -29,7 +29,7 @@
                 @forelse ($this->players as $player)
                     <tr class="border-t border-neutral-200 dark:border-neutral-700">
                         <td class="px-4 py-3">{{ $player->first_name }} {{ $player->last_name }}</td>
-                        <td class="px-4 py-3">{{ $player->email ?? '-' }}</td>
+                        <td class="px-4 py-3">{{ $player->number ?? '-' }}</td>
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-2">
                                 <flux:button size="sm" :href="route('players.edit', $player)" wire:navigate>{{ __('Edit') }}</flux:button>

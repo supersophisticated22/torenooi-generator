@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\TournamentMatch;
 use App\Models\User;
 use App\Policies\TenantRecordPolicy;
 use App\Tenancy\CurrentOrganization;
@@ -57,8 +58,24 @@ class AppServiceProvider extends ServiceProvider
 
     protected function configureAuthorization(): void
     {
+        Gate::define('view-tenant-record', function (User $user, Model $model): bool {
+            return app(TenantRecordPolicy::class)->view($user, $model);
+        });
+
         Gate::define('manage-tenant-record', function (User $user, Model $model): bool {
             return app(TenantRecordPolicy::class)->manage($user, $model);
+        });
+
+        Gate::define('create-tenant-record', function (User $user, string $modelClass): bool {
+            return app(TenantRecordPolicy::class)->create($user, $modelClass);
+        });
+
+        Gate::define('manage-event-operations', function (User $user, Model $model): bool {
+            return app(TenantRecordPolicy::class)->manageEventOperations($user, $model);
+        });
+
+        Gate::define('manage-match-scoring', function (User $user, TournamentMatch $match): bool {
+            return app(TenantRecordPolicy::class)->manageMatchScoring($user, $match);
         });
     }
 }

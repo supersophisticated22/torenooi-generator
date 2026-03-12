@@ -4,6 +4,7 @@ namespace App\Livewire\Venues;
 
 use App\Models\Venue;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -13,6 +14,11 @@ class Create extends Component
     public string $name = '';
 
     public ?string $address = null;
+
+    public function mount(): void
+    {
+        Gate::authorize('create-tenant-record', Venue::class);
+    }
 
     public function save(): void
     {

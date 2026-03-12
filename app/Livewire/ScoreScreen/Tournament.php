@@ -60,24 +60,21 @@ class Tournament extends Component
     #[Computed]
     public function teams(): Collection
     {
-        $entryTeams = $this->tournament->entries
-            ->pluck('team')
-            ->filter()
-            ->unique('id')
-            ->values();
-
-        if ($entryTeams->isNotEmpty()) {
-            return $entryTeams;
-        }
-
-        $teamIds = TournamentMatch::query()
-            ->where('organization_id', $this->organizationId)
-            ->where('tournament_id', $this->tournamentId)
+        $teamIds = $this->matchesQuery()
             ->get(['home_team_id', 'away_team_id'])
-            ->flatMap(fn (TournamentMatch $match): array => [$match->home_team_id, $match->away_team_id])
+            ->flatMap(fn (TournamentMatch $match): array => [(int) $match->home_team_id, (int) $match->away_team_id])
             ->filter()
             ->unique()
             ->values();
+
+        if ($teamIds->isEmpty() && $this->field_id === null) {
+            return $this->tournament->entries
+                ->pluck('team')
+                ->filter()
+                ->unique('id')
+                ->sortBy('name')
+                ->values();
+        }
 
         return Team::query()
             ->where('organization_id', $this->organizationId)

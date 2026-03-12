@@ -11,6 +11,7 @@ use App\Models\Event;
 use App\Models\Sport;
 use App\Models\Tournament;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -55,6 +56,11 @@ class Create extends Component
     public string $card_popup_condition = 'any_card';
 
     public ?int $card_popup_threshold = null;
+
+    public function mount(): void
+    {
+        Gate::authorize('create-tenant-record', Tournament::class);
+    }
 
     public function save(): void
     {
