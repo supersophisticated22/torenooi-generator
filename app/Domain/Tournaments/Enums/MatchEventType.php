@@ -10,4 +10,5 @@ enum MatchEventType: string
     case YellowCard = 'yellow_card';
     case RedCard = 'red_card';
     case GreenCard = 'green_card';
+    case Note = 'note';
 }

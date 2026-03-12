@@ -19,8 +19,10 @@ class MatchEvent extends Model
         'player_id',
         'event_type',
         'minute',
+        'sequence',
         'occurred_at',
         'notes',
+        'metadata',
     ];
 
     protected function casts(): array
@@ -28,6 +30,7 @@ class MatchEvent extends Model
         return [
             'event_type' => MatchEventType::class,
             'occurred_at' => 'datetime',
+            'metadata' => 'array',
         ];
     }
 

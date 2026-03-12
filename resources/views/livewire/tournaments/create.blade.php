@@ -58,6 +58,27 @@
 
         <flux:input wire:model="scheduled_start_at" :label="__('Start datetime')" type="datetime-local" />
 
+        <div class="space-y-3 rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
+            <flux:heading size="sm">{{ __('Tournament card popup settings') }}</flux:heading>
+            <flux:checkbox wire:model="card_popup_enabled" :label="__('Enable card popup')" />
+
+            <div class="grid gap-2 sm:grid-cols-3">
+                @foreach ($this->cardEventTypeOptions() as $option)
+                    <flux:checkbox wire:model="card_popup_types" value="{{ $option['value'] }}" :label="__($option['label'])" />
+                @endforeach
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <flux:select wire:model="card_popup_condition" :label="__('Display condition')">
+                    @foreach ($this->cardPopupConditionOptions() as $option)
+                        <option value="{{ $option['value'] }}">{{ __($option['label']) }}</option>
+                    @endforeach
+                </flux:select>
+
+                <flux:input wire:model="card_popup_threshold" :label="__('Threshold')" type="number" min="1" max="100" />
+            </div>
+        </div>
+
         <div class="flex items-center gap-3">
             <flux:button variant="primary" type="submit">{{ __('Save') }}</flux:button>
             <flux:button :href="route('tournaments.index')" wire:navigate>{{ __('Cancel') }}</flux:button>

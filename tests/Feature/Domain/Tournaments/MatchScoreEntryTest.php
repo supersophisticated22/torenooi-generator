@@ -12,6 +12,7 @@ use App\Models\Event;
 use App\Models\MatchEvent;
 use App\Models\MatchResult;
 use App\Models\Organization;
+use App\Models\Player;
 use App\Models\Sport;
 use App\Models\Team;
 use App\Models\Tournament;
@@ -63,6 +64,16 @@ beforeEach(function (): void {
         'category_id' => null,
     ]);
 
+    $this->homePlayer = Player::factory()->create([
+        'organization_id' => $this->organization->id,
+        'team_id' => $this->homeTeam->id,
+    ]);
+
+    $this->awayPlayer = Player::factory()->create([
+        'organization_id' => $this->organization->id,
+        'team_id' => $this->awayTeam->id,
+    ]);
+
     $this->match = TournamentMatch::factory()->create([
         'organization_id' => $this->organization->id,
         'tournament_id' => $this->tournament->id,
@@ -85,7 +96,9 @@ test('score entry saves match result and events', function (): void {
         ->assertHasNoErrors()
         ->set('event_type', MatchEventType::Goal->value)
         ->set('team_id', $this->homeTeam->id)
+        ->set('player_id', $this->homePlayer->id)
         ->set('minute', 12)
+        ->set('sequence', 1)
         ->set('notes', 'Opening goal')
         ->call('addEvent')
         ->assertHasNoErrors();
@@ -98,7 +111,54 @@ test('score entry saves match result and events', function (): void {
         ->and($result->winner_team_id)->toBe($this->homeTeam->id)
         ->and($event->event_type)->toBe(MatchEventType::Goal)
         ->and($event->team_id)->toBe($this->homeTeam->id)
-        ->and($event->minute)->toBe(12);
+        ->and($event->player_id)->toBe($this->homePlayer->id)
+        ->and($event->minute)->toBe(12)
+        ->and($event->sequence)->toBe(1);
+});
+
+test('score entry allows note events and removing match events', function (): void {
+    $component = Livewire::test(Score::class, ['match' => $this->match])
+        ->set('event_type', MatchEventType::Note->value)
+        ->set('team_id', null)
+        ->set('player_id', null)
+        ->set('minute', null)
+        ->set('sequence', 4)
+        ->set('notes', 'Weather delay')
+        ->call('addEvent')
+        ->assertHasNoErrors();
+
+    $event = MatchEvent::query()->where('match_id', $this->match->id)->firstOrFail();
+
+    expect($event->event_type)->toBe(MatchEventType::Note)
+        ->and($event->team_id)->toBeNull()
+        ->and($event->player_id)->toBeNull()
+        ->and($event->sequence)->toBe(4);
+
+    $component
+        ->call('removeEvent', $event->id)
+        ->assertHasNoErrors();
+
+    expect(MatchEvent::query()->whereKey($event->id)->exists())->toBeFalse();
+});
+
+test('score entry rejects players outside the match teams', function (): void {
+    $outsideTeam = Team::factory()->create([
+        'organization_id' => $this->organization->id,
+        'sport_id' => $this->sport->id,
+        'category_id' => null,
+    ]);
+
+    $outsidePlayer = Player::factory()->create([
+        'organization_id' => $this->organization->id,
+        'team_id' => $outsideTeam->id,
+    ]);
+
+    Livewire::test(Score::class, ['match' => $this->match])
+        ->set('event_type', MatchEventType::YellowCard->value)
+        ->set('team_id', $this->homeTeam->id)
+        ->set('player_id', $outsidePlayer->id)
+        ->call('addEvent')
+        ->assertHasErrors(['player_id']);
 });
 
 test('match can be marked as completed after score is entered', function (): void {

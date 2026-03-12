@@ -40,10 +40,12 @@ it('creates all mvp domain tables', function (): void {
         'referees',
         'events',
         'tournaments',
+        'referee_tournament',
         'tournament_entries',
         'pools',
         'pool_entries',
         'matches',
+        'match_referee_assignments',
         'match_results',
         'match_events',
     ];

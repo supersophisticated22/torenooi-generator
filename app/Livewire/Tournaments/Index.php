@@ -3,6 +3,7 @@
 namespace App\Livewire\Tournaments;
 
 use App\Models\Tournament;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
@@ -42,5 +43,10 @@ class Index extends Component
             ->with(['event', 'sport', 'category'])
             ->orderByDesc('created_at')
             ->get();
+    }
+
+    public function render(): View
+    {
+        return view('livewire.tournaments.index');
     }
 }

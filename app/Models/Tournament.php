@@ -10,6 +10,7 @@ use Database\Factories\TournamentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tournament extends Model
@@ -31,6 +32,7 @@ class Tournament extends Model
         'final_break_minutes',
         'scheduled_start_at',
         'scheduled_end_at',
+        'card_popup_settings',
         'status',
     ];
 
@@ -42,6 +44,7 @@ class Tournament extends Model
             'status' => TournamentStatus::class,
             'scheduled_start_at' => 'datetime',
             'scheduled_end_at' => 'datetime',
+            'card_popup_settings' => 'array',
         ];
     }
 
@@ -78,5 +81,13 @@ class Tournament extends Model
     public function matches(): HasMany
     {
         return $this->hasMany(TournamentMatch::class, 'tournament_id');
+    }
+
+    public function referees(): BelongsToMany
+    {
+        return $this->belongsToMany(Referee::class, 'referee_tournament')
+            ->using(TournamentReferee::class)
+            ->withPivot('organization_id')
+            ->withTimestamps();
     }
 }

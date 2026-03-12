@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Tournaments;
 
+use App\Domain\Tournaments\Enums\MatchEventType;
 use App\Domain\Tournaments\Enums\TournamentFinalType;
 use App\Domain\Tournaments\Enums\TournamentStatus;
 use App\Domain\Tournaments\Enums\TournamentType;
@@ -42,6 +43,19 @@ class Create extends Component
 
     public string $status = 'draft';
 
+    public bool $card_popup_enabled = false;
+
+    /** @var array<int, string> */
+    public array $card_popup_types = [
+        MatchEventType::YellowCard->value,
+        MatchEventType::RedCard->value,
+        MatchEventType::GreenCard->value,
+    ];
+
+    public string $card_popup_condition = 'any_card';
+
+    public ?int $card_popup_threshold = null;
+
     public function save(): void
     {
         $organization = Auth::user()?->currentOrganization();
@@ -68,7 +82,18 @@ class Create extends Component
             'final_break_minutes' => ['nullable', 'integer', 'min:0'],
             'scheduled_start_at' => ['nullable', 'date'],
             'status' => ['required', 'in:'.implode(',', array_column(TournamentStatus::cases(), 'value'))],
+            'card_popup_enabled' => ['required', 'boolean'],
+            'card_popup_types' => ['array'],
+            'card_popup_types.*' => ['required', 'in:'.implode(',', $this->cardEventTypes())],
+            'card_popup_condition' => ['required', 'in:any_card,threshold'],
+            'card_popup_threshold' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
+
+        if ($validated['card_popup_enabled'] && $validated['card_popup_condition'] === 'threshold' && $validated['card_popup_threshold'] === null) {
+            $this->addError('card_popup_threshold', 'The threshold field is required when threshold condition is selected.');
+
+            return;
+        }
 
         Tournament::query()->create([
             'organization_id' => $organization->id,
@@ -83,6 +108,7 @@ class Create extends Component
             'break_duration_minutes' => $validated['break_duration_minutes'],
             'final_break_minutes' => $validated['final_break_minutes'],
             'scheduled_start_at' => $this->normalizeDateTime($validated['scheduled_start_at']),
+            'card_popup_settings' => $this->buildCardPopupSettings($validated),
             'status' => $validated['status'],
         ]);
 
@@ -122,6 +148,22 @@ class Create extends Component
         return $this->enumOptions(TournamentStatus::cases());
     }
 
+    public function cardEventTypeOptions(): array
+    {
+        return array_map(fn (string $value): array => [
+            'value' => $value,
+            'label' => ucfirst(str_replace('_', ' ', $value)),
+        ], $this->cardEventTypes());
+    }
+
+    public function cardPopupConditionOptions(): array
+    {
+        return [
+            ['value' => 'any_card', 'label' => 'Any selected card'],
+            ['value' => 'threshold', 'label' => 'Threshold reached'],
+        ];
+    }
+
     private function normalizeDateTime(?string $value): ?string
     {
         if ($value === null || $value === '') {
@@ -148,5 +190,33 @@ class Create extends Component
             'value' => $case->value,
             'label' => ucfirst(str_replace('_', ' ', $case->value)),
         ], $cases);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function cardEventTypes(): array
+    {
+        return [
+            MatchEventType::YellowCard->value,
+            MatchEventType::RedCard->value,
+            MatchEventType::GreenCard->value,
+        ];
+    }
+
+    private function buildCardPopupSettings(array $validated): array
+    {
+        $cardTypes = array_values(array_unique(array_intersect($validated['card_popup_types'] ?? [], $this->cardEventTypes())));
+
+        return [
+            'enabled' => (bool) $validated['card_popup_enabled'],
+            'card_types' => $cardTypes,
+            'display' => [
+                'condition' => $validated['card_popup_condition'],
+                'threshold' => $validated['card_popup_condition'] === 'threshold'
+                    ? $validated['card_popup_threshold']
+                    : null,
+            ],
+        ];
     }
 }

@@ -2,9 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Organization;
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Database\Seeders\Demo\DemoSeeder;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -14,17 +12,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $organization = Organization::query()->firstOrCreate(
-            ['slug' => 'default-organization'],
-            ['name' => 'Default Organization'],
-        );
-
-        $user = User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            DemoSeeder::class,
         ]);
-
-        $user->organizations()->syncWithoutDetaching([$organization->id]);
-        $user->update(['current_organization_id' => $organization->id]);
     }
 }

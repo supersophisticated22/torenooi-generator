@@ -35,6 +35,7 @@ class TournamentFactory extends Factory
             'final_break_minutes' => 10,
             'scheduled_start_at' => fake()->dateTimeBetween('+1 day', '+1 week'),
             'scheduled_end_at' => fake()->dateTimeBetween('+1 week', '+2 weeks'),
+            'card_popup_settings' => null,
             'status' => TournamentStatus::Draft,
         ];
     }

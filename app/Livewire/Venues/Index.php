@@ -3,6 +3,7 @@
 namespace App\Livewire\Venues;
 
 use App\Models\Venue;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
@@ -41,5 +42,10 @@ class Index extends Component
             ->forOrganization($organization)
             ->orderBy('name')
             ->get();
+    }
+
+    public function render(): View
+    {
+        return view('livewire.venues.index');
     }
 }

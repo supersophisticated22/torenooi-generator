@@ -13,7 +13,12 @@ use App\Livewire\Matches\Score as MatchScore;
 use App\Livewire\Players\Create as PlayersCreate;
 use App\Livewire\Players\Edit as PlayersEdit;
 use App\Livewire\Players\Index as PlayersIndex;
+use App\Livewire\Referees\Create as RefereesCreate;
+use App\Livewire\Referees\Edit as RefereesEdit;
+use App\Livewire\Referees\Index as RefereesIndex;
+use App\Livewire\ScoreScreen\Event as PublicEventScreen;
 use App\Livewire\ScoreScreen\Index as PublicScoreScreen;
+use App\Livewire\ScoreScreen\Tournament as PublicTournamentScreen;
 use App\Livewire\Sports\Create as SportsCreate;
 use App\Livewire\Sports\Edit as SportsEdit;
 use App\Livewire\Sports\Index as SportsIndex;
@@ -33,6 +38,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
 Route::livewire('scores/{organization:slug}', PublicScoreScreen::class)->name('scores.public');
+Route::livewire('scores/{organization:slug}/events/{event}', PublicEventScreen::class)->name('scores.public.event');
+Route::livewire('scores/{organization:slug}/tournaments/{tournament}', PublicTournamentScreen::class)->name('scores.public.tournament');
 
 Route::middleware(['auth', 'organization', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
@@ -53,6 +60,10 @@ Route::middleware(['auth', 'organization', 'verified'])->group(function () {
     Route::livewire('players', PlayersIndex::class)->name('players.index');
     Route::livewire('players/create', PlayersCreate::class)->name('players.create');
     Route::livewire('players/{player}/edit', PlayersEdit::class)->name('players.edit');
+
+    Route::livewire('referees', RefereesIndex::class)->name('referees.index');
+    Route::livewire('referees/create', RefereesCreate::class)->name('referees.create');
+    Route::livewire('referees/{referee}/edit', RefereesEdit::class)->name('referees.edit');
 
     Route::livewire('venues', VenuesIndex::class)->name('venues.index');
     Route::livewire('venues/create', VenuesCreate::class)->name('venues.create');

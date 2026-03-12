@@ -3,6 +3,7 @@
 namespace App\Livewire\Events;
 
 use App\Models\Event;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
@@ -42,5 +43,10 @@ class Index extends Component
             ->orderByDesc('starts_at')
             ->orderBy('name')
             ->get();
+    }
+
+    public function render(): View
+    {
+        return view('livewire.events.index');
     }
 }

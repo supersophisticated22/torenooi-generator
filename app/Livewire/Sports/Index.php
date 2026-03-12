@@ -3,6 +3,7 @@
 namespace App\Livewire\Sports;
 
 use App\Models\Sport;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
@@ -46,5 +47,10 @@ class Index extends Component
             ->with('sportRule')
             ->orderBy('name')
             ->get();
+    }
+
+    public function render(): View
+    {
+        return view('livewire.sports.index');
     }
 }

@@ -8,6 +8,7 @@ use Database\Factories\TournamentMatchFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -64,6 +65,14 @@ class TournamentMatch extends Model
     public function referee(): BelongsTo
     {
         return $this->belongsTo(Referee::class);
+    }
+
+    public function referees(): BelongsToMany
+    {
+        return $this->belongsToMany(Referee::class, 'match_referee_assignments', 'match_id', 'referee_id')
+            ->using(MatchRefereeAssignment::class)
+            ->withPivot('organization_id')
+            ->withTimestamps();
     }
 
     public function homeTeam(): BelongsTo

@@ -37,6 +37,9 @@
                     <flux:sidebar.item icon="users" :href="route('players.index')" :current="request()->routeIs('players.*')" wire:navigate>
                         {{ __('Players') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="user" :href="route('referees.index')" :current="request()->routeIs('referees.*')" wire:navigate>
+                        {{ __('Referees') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
 
                 <flux:sidebar.group :heading="__('Locations')" class="grid">

@@ -3,6 +3,7 @@
 namespace App\Livewire\Players;
 
 use App\Models\Player;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
@@ -42,5 +43,10 @@ class Index extends Component
             ->orderBy('first_name')
             ->orderBy('last_name')
             ->get();
+    }
+
+    public function render(): View
+    {
+        return view('livewire.players.index');
     }
 }

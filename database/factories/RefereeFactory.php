@@ -17,6 +17,7 @@ class RefereeFactory extends Factory
     {
         return [
             'organization_id' => Organization::factory(),
+            'sport_id' => null,
             'first_name' => fake()->firstName(),
             'last_name' => fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),

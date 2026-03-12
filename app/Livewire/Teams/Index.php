@@ -3,6 +3,7 @@
 namespace App\Livewire\Teams;
 
 use App\Models\Team;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
@@ -44,5 +45,10 @@ class Index extends Component
             ->with(['sport', 'category'])
             ->orderBy('name')
             ->get();
+    }
+
+    public function render(): View
+    {
+        return view('livewire.teams.index');
     }
 }

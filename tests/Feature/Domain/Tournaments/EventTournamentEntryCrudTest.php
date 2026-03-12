@@ -88,6 +88,10 @@ test('tournament can be created and updated', function (): void {
         ->set('final_break_minutes', 10)
         ->set('scheduled_start_at', '2026-06-03T09:30')
         ->set('status', TournamentStatus::Scheduled->value)
+        ->set('card_popup_enabled', true)
+        ->set('card_popup_types', ['yellow_card', 'red_card'])
+        ->set('card_popup_condition', 'threshold')
+        ->set('card_popup_threshold', 2)
         ->call('save')
         ->assertHasNoErrors();
 
@@ -98,6 +102,14 @@ test('tournament can be created and updated', function (): void {
         ->and($tournament->sport_id)->toBe($this->sport->id)
         ->and($tournament->category_id)->toBe($this->category->id)
         ->and($tournament->type)->toBe(TournamentType::HalfCompetition)
+        ->and($tournament->card_popup_settings)->toMatchArray([
+            'enabled' => true,
+            'card_types' => ['yellow_card', 'red_card'],
+            'display' => [
+                'condition' => 'threshold',
+                'threshold' => 2,
+            ],
+        ])
         ->and($tournament->status)->toBe(TournamentStatus::Scheduled);
 
     Livewire::test(TournamentEdit::class, ['tournament' => $tournament])
@@ -113,6 +125,10 @@ test('tournament can be created and updated', function (): void {
         ->set('final_break_minutes', 15)
         ->set('scheduled_start_at', '2026-06-03T10:30')
         ->set('status', TournamentStatus::Draft->value)
+        ->set('card_popup_enabled', false)
+        ->set('card_popup_types', ['green_card'])
+        ->set('card_popup_condition', 'any_card')
+        ->set('card_popup_threshold', null)
         ->call('save')
         ->assertHasNoErrors();
 
@@ -123,6 +139,14 @@ test('tournament can be created and updated', function (): void {
         ->and($tournament->type)->toBe(TournamentType::FullCompetition)
         ->and($tournament->final_type)->toBe(TournamentFinalType::None)
         ->and($tournament->pool_count)->toBe(0)
+        ->and($tournament->card_popup_settings)->toMatchArray([
+            'enabled' => false,
+            'card_types' => ['green_card'],
+            'display' => [
+                'condition' => 'any_card',
+                'threshold' => null,
+            ],
+        ])
         ->and($tournament->status)->toBe(TournamentStatus::Draft);
 });
 

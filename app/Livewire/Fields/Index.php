@@ -3,6 +3,7 @@
 namespace App\Livewire\Fields;
 
 use App\Models\Field;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
@@ -42,5 +43,10 @@ class Index extends Component
             ->with(['venue', 'sport'])
             ->orderBy('name')
             ->get();
+    }
+
+    public function render(): View
+    {
+        return view('livewire.fields.index');
     }
 }
