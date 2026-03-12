@@ -20,6 +20,9 @@ class OrganizationFactory extends Factory
         return [
             'name' => $name,
             'slug' => Str::slug($name).'-'.fake()->unique()->numberBetween(100, 999),
+            'country' => 'NL',
+            'timezone' => 'Europe/Amsterdam',
+            'locale' => 'nl',
         ];
     }
 }

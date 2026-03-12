@@ -6,6 +6,7 @@ use App\Domain\Tournaments\Enums\EventStatus;
 use App\Models\Event;
 use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
  * @extends Factory<Event>
@@ -22,6 +23,7 @@ class EventFactory extends Factory
         return [
             'organization_id' => Organization::factory(),
             'name' => fake()->sentence(3),
+            'slug' => Str::slug(fake()->unique()->sentence(3)),
             'starts_at' => $start,
             'ends_at' => $end,
             'status' => EventStatus::Draft,

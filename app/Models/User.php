@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Domain\Auth\Enums\OnboardingStatus;
 use App\Domain\Auth\Enums\OrganizationRole;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
@@ -29,6 +30,7 @@ class User extends Authenticatable
         'password',
         'current_organization_id',
         'is_platform_admin',
+        'onboarding_status',
     ];
 
     /**
@@ -54,6 +56,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_platform_admin' => 'bool',
+            'onboarding_status' => OnboardingStatus::class,
         ];
     }
 

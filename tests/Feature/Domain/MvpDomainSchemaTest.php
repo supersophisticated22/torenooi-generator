@@ -48,6 +48,8 @@ it('creates all mvp domain tables', function (): void {
         'match_referee_assignments',
         'match_results',
         'match_events',
+        'subscriptions',
+        'billing_events',
     ];
 
     foreach ($tables as $table) {

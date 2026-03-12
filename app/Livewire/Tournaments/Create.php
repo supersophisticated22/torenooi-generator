@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Tournaments;
 
+use App\Domain\Billing\Exceptions\FeatureLimitExceededException;
+use App\Domain\Billing\Services\EnsureOrganizationCanUseFeature;
 use App\Domain\Tournaments\Enums\MatchEventType;
 use App\Domain\Tournaments\Enums\TournamentFinalType;
 use App\Domain\Tournaments\Enums\TournamentStatus;
@@ -68,6 +70,14 @@ class Create extends Component
 
         if ($organization === null) {
             abort(403);
+        }
+
+        try {
+            app(EnsureOrganizationCanUseFeature::class)->forTournamentCreation($organization);
+        } catch (FeatureLimitExceededException $exception) {
+            $this->addError('plan', $exception->getMessage());
+
+            return;
         }
 
         $validated = $this->validate([

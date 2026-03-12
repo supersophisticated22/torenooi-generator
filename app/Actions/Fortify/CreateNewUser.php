@@ -4,7 +4,7 @@ namespace App\Actions\Fortify;
 
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
-use App\Models\Organization;
+use App\Domain\Auth\Enums\OnboardingStatus;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -33,12 +33,7 @@ class CreateNewUser implements CreatesNewUsers
                 'password' => $input['password'],
             ]);
 
-            $organization = Organization::query()->first();
-
-            if ($organization !== null) {
-                $user->organizations()->syncWithoutDetaching([$organization->id]);
-                $user->update(['current_organization_id' => $organization->id]);
-            }
+            $user->forceFill(['onboarding_status' => OnboardingStatus::AccountCreated])->save();
 
             return $user;
         });

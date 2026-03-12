@@ -1,5 +1,10 @@
 <?php
 
+use App\Domain\Auth\Enums\OnboardingStatus;
+use App\Domain\Auth\Enums\OrganizationRole;
+use App\Domain\Billing\Enums\BillingPlan;
+use App\Domain\Billing\Enums\SubscriptionStatus;
+use App\Models\Organization;
 use App\Models\User;
 use Laravel\Fortify\Features;
 use Livewire\Livewire;
@@ -14,7 +19,7 @@ beforeEach(function () {
 });
 
 test('two factor settings page can be rendered', function () {
-    $user = User::factory()->create();
+    $user = createOrganizationUser();
 
     $this->actingAs($user)
         ->withSession(['auth.password_confirmed_at' => time()])
@@ -25,7 +30,7 @@ test('two factor settings page can be rendered', function () {
 });
 
 test('two factor settings page requires password confirmation when enabled', function () {
-    $user = User::factory()->create();
+    $user = createOrganizationUser();
 
     $response = $this->actingAs($user)
         ->get(route('two-factor.show'));
@@ -36,7 +41,7 @@ test('two factor settings page requires password confirmation when enabled', fun
 test('two factor settings page returns forbidden response when two factor is disabled', function () {
     config(['fortify.features' => []]);
 
-    $user = User::factory()->create();
+    $user = createOrganizationUser();
 
     $response = $this->actingAs($user)
         ->withSession(['auth.password_confirmed_at' => time()])
@@ -46,7 +51,7 @@ test('two factor settings page returns forbidden response when two factor is dis
 });
 
 test('two factor authentication disabled when confirmation abandoned between requests', function () {
-    $user = User::factory()->create();
+    $user = createOrganizationUser();
 
     $user->forceFill([
         'two_factor_secret' => encrypt('test-secret'),
@@ -66,3 +71,19 @@ test('two factor authentication disabled when confirmation abandoned between req
         'two_factor_recovery_codes' => null,
     ]);
 });
+
+function createOrganizationUser(): User
+{
+    $organization = Organization::factory()->create([
+        'selected_plan' => BillingPlan::Starter,
+        'subscription_plan' => BillingPlan::Starter,
+        'subscription_status' => SubscriptionStatus::Active,
+    ]);
+    $user = User::factory()->create([
+        'onboarding_status' => OnboardingStatus::OnboardingComplete,
+    ]);
+    $user->organizations()->attach($organization->id, ['role' => OrganizationRole::OrganizationAdmin->value]);
+    $user->update(['current_organization_id' => $organization->id]);
+
+    return $user->fresh();
+}

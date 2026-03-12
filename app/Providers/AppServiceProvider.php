@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Domain\Auth\Enums\OrganizationRole;
+use App\Domain\Billing\Services\SubscriptionLimits;
 use App\Models\TournamentMatch;
 use App\Models\User;
 use App\Policies\TenantRecordPolicy;
@@ -76,6 +78,30 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::define('manage-match-scoring', function (User $user, TournamentMatch $match): bool {
             return app(TenantRecordPolicy::class)->manageMatchScoring($user, $match);
+        });
+
+        Gate::define('manage-organization-billing', function (User $user): bool {
+            $organizationId = $user->currentOrganization()?->id;
+
+            if ($organizationId === null) {
+                return false;
+            }
+
+            return $user->hasOrganizationRole($organizationId, OrganizationRole::OrganizationAdmin);
+        });
+
+        Gate::define('manage-organization-users', function (User $user): bool {
+            $organization = $user->currentOrganization();
+
+            if ($organization === null) {
+                return false;
+            }
+
+            if (! app(SubscriptionLimits::class)->hasPaidSubscription($organization)) {
+                return false;
+            }
+
+            return $user->hasOrganizationRole($organization->id, OrganizationRole::OrganizationAdmin);
         });
     }
 }

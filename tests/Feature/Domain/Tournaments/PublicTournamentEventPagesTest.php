@@ -376,7 +376,7 @@ it('shows and filters public event page by sport tournament and field', function
         'status' => MatchStatus::Scheduled,
     ]);
 
-    $this->get(route('scores.public.event', ['organization' => $organization->slug, 'event' => $event->id]))
+    $this->get(route('scores.public.event', ['organization' => $organization->slug, 'eventSlug' => $event->slug]))
         ->assertOk()
         ->assertSee('Public Event Detail')
         ->assertSee('Tournament summary')
@@ -385,7 +385,7 @@ it('shows and filters public event page by sport tournament and field', function
         ->assertSee('Results')
         ->assertSee('Standings');
 
-    Livewire::test(PublicEventScreen::class, ['organization' => $organization, 'event' => $event])
+    Livewire::test(PublicEventScreen::class, ['organization' => $organization, 'eventSlug' => $event->slug])
         ->assertSee('Event Alpha Team')
         ->assertSee('Event Gamma Team')
         ->set('sport_id', $sportA->id)
@@ -415,6 +415,6 @@ it('does not expose event of another organization on public event page', functio
 
     expect($eventA->id)->not->toBe($eventB->id);
 
-    $this->get(route('scores.public.event', ['organization' => $organizationA->slug, 'event' => $eventB->id]))
+    $this->get(route('scores.public.event', ['organization' => $organizationA->slug, 'eventSlug' => $eventB->slug]))
         ->assertNotFound();
 });

@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Teams;
 
+use App\Domain\Billing\Exceptions\FeatureLimitExceededException;
+use App\Domain\Billing\Services\EnsureOrganizationCanUseFeature;
 use App\Models\Category;
 use App\Models\Sport;
 use App\Models\Team;
@@ -34,6 +36,14 @@ class Create extends Component
 
         if ($organization === null) {
             abort(403);
+        }
+
+        try {
+            app(EnsureOrganizationCanUseFeature::class)->forTeamCreation($organization);
+        } catch (FeatureLimitExceededException $exception) {
+            $this->addError('plan', $exception->getMessage());
+
+            return;
         }
 
         $validated = $this->validate([

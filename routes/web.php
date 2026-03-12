@@ -1,5 +1,12 @@
 <?php
 
+use App\Http\Controllers\Billing\CreateBillingPortalSessionController;
+use App\Http\Controllers\Billing\CreateCheckoutSessionController;
+use App\Http\Controllers\Billing\StripeWebhookController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Onboarding\CheckoutCancelController;
+use App\Http\Controllers\Onboarding\CheckoutSuccessController;
+use App\Http\Controllers\Onboarding\StartCheckoutController;
 use App\Livewire\Categories\Create as CategoriesCreate;
 use App\Livewire\Categories\Edit as CategoriesEdit;
 use App\Livewire\Categories\Index as CategoriesIndex;
@@ -10,6 +17,9 @@ use App\Livewire\Fields\Create as FieldsCreate;
 use App\Livewire\Fields\Edit as FieldsEdit;
 use App\Livewire\Fields\Index as FieldsIndex;
 use App\Livewire\Matches\Score as MatchScore;
+use App\Livewire\Onboarding\OrganizationCreate as OnboardingOrganizationCreate;
+use App\Livewire\Onboarding\Payment as OnboardingPayment;
+use App\Livewire\Onboarding\PlanSelect as OnboardingPlanSelect;
 use App\Livewire\Players\Create as PlayersCreate;
 use App\Livewire\Players\Edit as PlayersEdit;
 use App\Livewire\Players\Index as PlayersIndex;
@@ -34,15 +44,42 @@ use App\Livewire\Tournaments\Show as TournamentsShow;
 use App\Livewire\Venues\Create as VenuesCreate;
 use App\Livewire\Venues\Edit as VenuesEdit;
 use App\Livewire\Venues\Index as VenuesIndex;
+use App\Services\OnboardingFlow;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
 Route::livewire('scores/{organization:slug}', PublicScoreScreen::class)->name('scores.public');
-Route::livewire('scores/{organization:slug}/events/{event}', PublicEventScreen::class)->name('scores.public.event');
+Route::livewire('scores/{organization:slug}/events/{eventSlug}', PublicEventScreen::class)->name('scores.public.event');
 Route::livewire('scores/{organization:slug}/tournaments/{tournament}', PublicTournamentScreen::class)->name('scores.public.tournament');
+Route::livewire('events/{organization:slug}/{eventSlug}', PublicEventScreen::class)->name('events.public.show');
 
-Route::middleware(['auth', 'organization', 'verified'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+Route::middleware(['auth'])->group(function () {
+    Route::get('onboarding', function (Request $request, OnboardingFlow $onboardingFlow) {
+        $user = $request->user();
+
+        if ($user === null) {
+            return redirect()->route('login');
+        }
+
+        $onboardingFlow->sync($user);
+        $requiredRoute = $onboardingFlow->requiredRoute($user);
+
+        return $requiredRoute === null
+            ? redirect()->route('dashboard')
+            : redirect()->route($requiredRoute);
+    })->name('onboarding.index');
+    Route::livewire('onboarding/organization', OnboardingOrganizationCreate::class)->name('onboarding.organization');
+    Route::livewire('onboarding/plan', OnboardingPlanSelect::class)->name('onboarding.plan');
+    Route::livewire('onboarding/payment', OnboardingPayment::class)->name('onboarding.payment');
+    Route::post('onboarding/checkout/start', StartCheckoutController::class)->name('onboarding.checkout.start');
+    Route::get('onboarding/checkout/success', CheckoutSuccessController::class)->name('onboarding.checkout.success');
+    Route::get('onboarding/checkout/cancel', CheckoutCancelController::class)->name('onboarding.checkout.cancel');
+});
+
+Route::middleware(['auth', 'organization', 'verified', 'onboarding'])->group(function () {
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     Route::livewire('sports', SportsIndex::class)->name('sports.index');
     Route::livewire('sports/create', SportsCreate::class)->name('sports.create');
@@ -83,6 +120,13 @@ Route::middleware(['auth', 'organization', 'verified'])->group(function () {
     Route::livewire('tournaments/{tournament}', TournamentsShow::class)->name('tournaments.show');
     Route::livewire('tournaments/{tournament}/edit', TournamentsEdit::class)->name('tournaments.edit');
     Route::livewire('tournaments/{tournament}/entries', TournamentsEntries::class)->name('tournaments.entries');
+
+    Route::post('billing/checkout/{plan}', CreateCheckoutSessionController::class)->name('billing.checkout');
+    Route::post('billing/portal', CreateBillingPortalSessionController::class)->name('billing.portal');
 });
+
+Route::post('stripe/webhook', StripeWebhookController::class)
+    ->withoutMiddleware([VerifyCsrfToken::class])
+    ->name('stripe.webhook');
 
 require __DIR__.'/settings.php';

@@ -19,14 +19,20 @@ php artisan db:seed --class=Database\\Seeders\\Demo\\DemoSeeder --no-interaction
 ### Demo login users
 
 - `organizer@demo.test` / `password`
-- `coach@demo.test` / `password`
+- `viewer@demo.test` / `password`
+- `pending-admin@demo.test` / `password`
 
 ### What gets generated
 
-- 1 demo organization
-- 2 demo users linked to the organization
+- 2 demo organizations (one subscribed, one onboarding-pending)
+- 3 demo users linked to organizations with different roles
 - sports, categories, teams, players, venue, and fields
 - 2 realistic tournaments:
   - Amsterdam Football Cup 2026
   - Amsterdam Basketball Cup 2026
 - tournament entries, generated matches, and partially completed match results
+
+### Onboarding testing
+
+- Use `pending-admin@demo.test` to test onboarding plan/payment steps.
+- Use `organizer@demo.test` to test post-onboarding dashboard flow.

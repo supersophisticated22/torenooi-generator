@@ -36,14 +36,15 @@ class Event extends Component
     #[Url(as: 'field', except: null)]
     public ?int $field_id = null;
 
-    public function mount(Organization $organization, EventModel $event): void
+    public function mount(Organization $organization, string $eventSlug): void
     {
-        if ((int) $event->organization_id !== (int) $organization->id) {
-            abort(404);
-        }
+        $event = EventModel::query()
+            ->where('organization_id', $organization->id)
+            ->where('slug', $eventSlug)
+            ->firstOrFail();
 
-        $this->organizationId = $organization->id;
-        $this->eventId = $event->id;
+        $this->organizationId = (int) $organization->id;
+        $this->eventId = (int) $event->id;
     }
 
     #[Computed]

@@ -3,6 +3,7 @@
 namespace App\Livewire\Events;
 
 use App\Domain\Tournaments\Enums\EventStatus;
+use App\Domain\Tournaments\Services\GenerateEventSlug;
 use App\Models\Event;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
@@ -48,6 +49,7 @@ class Edit extends Component
 
         $event->update([
             'name' => $validated['name'],
+            'slug' => app(GenerateEventSlug::class)->forOrganization($event->organization, $validated['name'], $event->id),
             'starts_at' => $this->normalizeDateTime($validated['starts_at']),
             'ends_at' => $this->normalizeDateTime($validated['ends_at']),
             'status' => $validated['status'],

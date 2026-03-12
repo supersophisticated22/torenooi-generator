@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Domain\Billing\Enums\BillingPlan;
+use App\Domain\Billing\Enums\SubscriptionStatus;
 use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,7 +18,31 @@ class Organization extends Model
     protected $fillable = [
         'name',
         'slug',
+        'country',
+        'logo_path',
+        'primary_color',
+        'timezone',
+        'locale',
+        'stripe_customer_id',
+        'stripe_default_payment_method_id',
+        'billing_email',
+        'trial_ends_at',
+        'subscription_plan',
+        'selected_plan',
+        'subscription_status',
+        'subscription_ends_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'trial_ends_at' => 'datetime',
+            'subscription_ends_at' => 'datetime',
+            'subscription_plan' => BillingPlan::class,
+            'selected_plan' => BillingPlan::class,
+            'subscription_status' => SubscriptionStatus::class,
+        ];
+    }
 
     public function sports(): HasMany
     {
@@ -98,10 +124,25 @@ class Organization extends Model
         return $this->hasMany(MatchEvent::class);
     }
 
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function billingEvents(): HasMany
+    {
+        return $this->hasMany(BillingEvent::class);
+    }
+
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)
             ->withPivot('role')
             ->withTimestamps();
+    }
+
+    public function activePlan(): BillingPlan
+    {
+        return $this->subscription_plan ?? BillingPlan::Starter;
     }
 }

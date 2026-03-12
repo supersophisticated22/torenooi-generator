@@ -3,6 +3,7 @@
 namespace App\Livewire\Events;
 
 use App\Domain\Tournaments\Enums\EventStatus;
+use App\Domain\Tournaments\Services\GenerateEventSlug;
 use App\Models\Event;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -43,6 +44,7 @@ class Create extends Component
         Event::query()->create([
             'organization_id' => $organization->id,
             'name' => $validated['name'],
+            'slug' => app(GenerateEventSlug::class)->forOrganization($organization, $validated['name']),
             'starts_at' => $this->normalizeDateTime($validated['starts_at']),
             'ends_at' => $this->normalizeDateTime($validated['ends_at']),
             'status' => $validated['status'],

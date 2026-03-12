@@ -8,10 +8,14 @@ class DemoCatalog
 
     public const ORGANIZATION_SLUG = 'demo-sports-league';
 
+    public const ONBOARDING_ORGANIZATION_NAME = 'Demo Pending Club';
+
+    public const ONBOARDING_ORGANIZATION_SLUG = 'demo-pending-club';
+
     public const DEMO_PASSWORD = 'password';
 
     /**
-     * @return array<int, array{name:string,email:string}>
+     * @return array<int, array{name:string,email:string,role:string,organization_slug:string}>
      */
     public static function users(): array
     {
@@ -19,10 +23,20 @@ class DemoCatalog
             [
                 'name' => 'Demo Organizer',
                 'email' => 'organizer@demo.test',
+                'role' => 'organization_admin',
+                'organization_slug' => self::ORGANIZATION_SLUG,
             ],
             [
-                'name' => 'Demo Coach',
-                'email' => 'coach@demo.test',
+                'name' => 'Demo Viewer',
+                'email' => 'viewer@demo.test',
+                'role' => 'viewer',
+                'organization_slug' => self::ORGANIZATION_SLUG,
+            ],
+            [
+                'name' => 'Demo Pending Admin',
+                'email' => 'pending-admin@demo.test',
+                'role' => 'organization_admin',
+                'organization_slug' => self::ONBOARDING_ORGANIZATION_SLUG,
             ],
         ];
     }
