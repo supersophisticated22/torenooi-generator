@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Category;
 use App\Models\Organization;
+use App\Models\Sport;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -18,6 +19,7 @@ class TeamFactory extends Factory
     {
         return [
             'organization_id' => Organization::factory(),
+            'sport_id' => Sport::factory(),
             'category_id' => Category::factory(),
             'name' => fake()->company().' Team',
             'short_name' => fake()->bothify('???'),

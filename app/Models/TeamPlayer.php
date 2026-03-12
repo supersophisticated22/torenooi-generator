@@ -15,6 +15,7 @@ class TeamPlayer extends Pivot
         'organization_id',
         'team_id',
         'player_id',
+        'jersey_number',
     ];
 
     public function organization(): BelongsTo

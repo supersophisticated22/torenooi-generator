@@ -17,6 +17,7 @@ class Team extends Model
 
     protected $fillable = [
         'organization_id',
+        'sport_id',
         'category_id',
         'name',
         'short_name',
@@ -32,10 +33,16 @@ class Team extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function sport(): BelongsTo
+    {
+        return $this->belongsTo(Sport::class);
+    }
+
     public function players(): BelongsToMany
     {
         return $this->belongsToMany(Player::class, 'team_player')
             ->using(TeamPlayer::class)
+            ->withPivot('jersey_number')
             ->withTimestamps();
     }
 

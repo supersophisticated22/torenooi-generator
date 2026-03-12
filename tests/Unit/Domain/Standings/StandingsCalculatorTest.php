@@ -36,9 +36,8 @@ it('resolves tied points by goal difference', function (): void {
     $calculator = new StandingsCalculator;
 
     $table = $calculator->calculate([
-        ['home_team_id' => 1, 'away_team_id' => 2, 'home_score' => 4, 'away_score' => 0],
-        ['home_team_id' => 3, 'away_team_id' => 1, 'home_score' => 1, 'away_score' => 0],
-        ['home_team_id' => 2, 'away_team_id' => 3, 'home_score' => 2, 'away_score' => 0],
+        ['home_team_id' => 1, 'away_team_id' => 3, 'home_score' => 3, 'away_score' => 0],
+        ['home_team_id' => 2, 'away_team_id' => 3, 'home_score' => 1, 'away_score' => 0],
     ], ['win' => 3, 'draw' => 1, 'loss' => 0]);
 
     expect($table[0]['team_id'])->toBe(1)
@@ -52,9 +51,8 @@ it('resolves tied points and goal difference by goals scored', function (): void
     $calculator = new StandingsCalculator;
 
     $table = $calculator->calculate([
-        ['home_team_id' => 1, 'away_team_id' => 2, 'home_score' => 2, 'away_score' => 0],
-        ['home_team_id' => 3, 'away_team_id' => 1, 'home_score' => 3, 'away_score' => 0],
-        ['home_team_id' => 2, 'away_team_id' => 3, 'home_score' => 2, 'away_score' => 0],
+        ['home_team_id' => 1, 'away_team_id' => 3, 'home_score' => 2, 'away_score' => 1],
+        ['home_team_id' => 2, 'away_team_id' => 3, 'home_score' => 3, 'away_score' => 2],
     ], ['win' => 3, 'draw' => 1, 'loss' => 0]);
 
     expect($table[0]['team_id'])->toBe(2)

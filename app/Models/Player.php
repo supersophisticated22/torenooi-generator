@@ -37,6 +37,7 @@ class Player extends Model
     {
         return $this->belongsToMany(Team::class, 'team_player')
             ->using(TeamPlayer::class)
+            ->withPivot('jersey_number')
             ->withTimestamps();
     }
 
