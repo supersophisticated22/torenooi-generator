@@ -21,6 +21,7 @@ class Player extends Model
         'first_name',
         'last_name',
         'number',
+        'email',
     ];
 
     public function organization(): BelongsTo
