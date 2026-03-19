@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureOnboardingComplete;
 use App\Http\Middleware\EnsurePaidOrganizationSubscription;
+use App\Http\Middleware\EnsurePlatformAdminUsesAdminArea;
 use App\Http\Middleware\ResolveCurrentOrganization;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -18,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'organization' => ResolveCurrentOrganization::class,
             'onboarding' => EnsureOnboardingComplete::class,
             'paid-subscription' => EnsurePaidOrganizationSubscription::class,
+            'tenant-area' => EnsurePlatformAdminUsesAdminArea::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -65,3 +65,18 @@ test('users can logout', function () {
 
     $this->assertGuest();
 });
+
+test('disabled users can not authenticate using the login screen', function () {
+    $user = User::factory()->create([
+        'disabled_at' => now(),
+    ]);
+
+    $response = $this->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $response->assertSessionHasErrorsIn('email');
+
+    $this->assertGuest();
+});

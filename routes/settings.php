@@ -15,7 +15,7 @@ Route::middleware(['auth'])->group(function () {
     Route::livewire('settings/profile', Profile::class)->name('profile.edit');
 });
 
-Route::middleware(['auth', 'organization', 'verified', 'onboarding'])->group(function () {
+Route::middleware(['auth', 'tenant-area', 'organization', 'verified', 'onboarding'])->group(function () {
     Route::livewire('settings/password', Password::class)->name('user-password.edit');
     Route::livewire('settings/appearance', Appearance::class)->name('appearance.edit');
     Route::livewire('settings/billing', Billing::class)->name('billing.show');

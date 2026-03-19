@@ -15,11 +15,18 @@ class DemoCatalog
     public const DEMO_PASSWORD = 'password';
 
     /**
-     * @return array<int, array{name:string,email:string,role:string,organization_slug:string}>
+     * @return array<int, array{name:string,email:string,role:string,organization_slug:string,is_platform_admin?:bool}>
      */
     public static function users(): array
     {
         return [
+            [
+                'name' => 'Demo Platform Admin',
+                'email' => 'admin@demo.test',
+                'role' => 'organization_admin',
+                'organization_slug' => self::ORGANIZATION_SLUG,
+                'is_platform_admin' => true,
+            ],
             [
                 'name' => 'Demo Organizer',
                 'email' => 'organizer@demo.test',

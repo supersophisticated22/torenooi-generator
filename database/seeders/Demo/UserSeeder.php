@@ -28,6 +28,7 @@ class UserSeeder extends Seeder
                     'password' => Hash::make(DemoCatalog::DEMO_PASSWORD),
                     'email_verified_at' => now(),
                     'onboarding_status' => $onboardingStatus,
+                    'is_platform_admin' => (bool) ($demoUser['is_platform_admin'] ?? false),
                 ],
             );
 

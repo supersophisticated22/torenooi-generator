@@ -44,13 +44,24 @@ it('seeds demo users that can authenticate locally', function (): void {
         ->firstOrFail();
 
     foreach (DemoCatalog::users() as $demoUser) {
+        $expectedOrganization = Organization::query()
+            ->where('slug', $demoUser['organization_slug'])
+            ->firstOrFail();
+
         $user = User::query()
             ->where('email', $demoUser['email'])
             ->first();
 
         expect($user)->not->toBeNull()
             ->and(Hash::check(DemoCatalog::DEMO_PASSWORD, $user->password))->toBeTrue()
-            ->and($user->current_organization_id)->toBe($organization->id)
-            ->and($user->belongsToOrganizationId($organization->id))->toBeTrue();
+            ->and($user->current_organization_id)->toBe($expectedOrganization->id)
+            ->and($user->belongsToOrganizationId($expectedOrganization->id))->toBeTrue();
     }
+
+    $platformAdmin = User::query()
+        ->where('email', 'admin@demo.test')
+        ->first();
+
+    expect($platformAdmin)->not->toBeNull()
+        ->and($platformAdmin->isPlatformAdmin())->toBeTrue();
 });

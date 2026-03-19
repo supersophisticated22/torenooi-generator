@@ -5,6 +5,7 @@
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800">
         @php($currentOrganizationSlug = auth()->user()->currentOrganization()?->slug)
+        @php($isPlatformAdmin = auth()->user()->isPlatformAdmin())
         <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
             <flux:sidebar.header>
                 <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
@@ -13,54 +14,66 @@
 
             <flux:sidebar.nav>
                 <flux:sidebar.group :heading="__('Platform')" class="grid">
-                    <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                        {{ __('Dashboard') }}
-                    </flux:sidebar.item>
-                    @if (auth()->user()->isPlatformAdmin())
-                        <flux:sidebar.item icon="cog-8-tooth" :href="route('admin.saas.index')" :current="request()->routeIs('admin.saas.*')" wire:navigate>
-                            {{ __('Admin / SaaS') }}
+                    @if ($isPlatformAdmin)
+                        <flux:sidebar.item icon="building-office-2" :href="route('admin.organizations.index')" :current="request()->routeIs('admin.organizations.*')" wire:navigate>
+                            {{ __('Organizations') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="users" :href="route('admin.users.index')" :current="request()->routeIs('admin.users.*')" wire:navigate>
+                            {{ __('Users') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="shield-check" :href="route('admin.admin-users.index')" :current="request()->routeIs('admin.admin-users.*')" wire:navigate>
+                            {{ __('Admin Users') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="credit-card" :href="route('admin.subscriptions.index')" :current="request()->routeIs('admin.subscriptions.*')" wire:navigate>
+                            {{ __('Subscriptions') }}
+                        </flux:sidebar.item>
+                    @else
+                        <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+                            {{ __('Dashboard') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="trophy" :href="route('events.index')" :current="request()->routeIs('events.*')" wire:navigate>
+                            {{ __('Events') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="list-bullet" :href="route('tournaments.index')" :current="request()->routeIs('tournaments.*')" wire:navigate>
+                            {{ __('Tournaments') }}
                         </flux:sidebar.item>
                     @endif
-                    <flux:sidebar.item icon="trophy" :href="route('events.index')" :current="request()->routeIs('events.*')" wire:navigate>
-                        {{ __('Events') }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="list-bullet" :href="route('tournaments.index')" :current="request()->routeIs('tournaments.*')" wire:navigate>
-                        {{ __('Tournaments') }}
-                    </flux:sidebar.item>
                 </flux:sidebar.group>
 
-                <flux:sidebar.group :heading="__('Participants')" class="grid">
-                    <flux:sidebar.item icon="academic-cap" :href="route('sports.index')" :current="request()->routeIs('sports.*')" wire:navigate>
-                        {{ __('Sports') }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="tag" :href="route('categories.index')" :current="request()->routeIs('categories.*')" wire:navigate>
-                        {{ __('Categories') }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="shield-check" :href="route('teams.index')" :current="request()->routeIs('teams.*')" wire:navigate>
-                        {{ __('Teams') }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="users" :href="route('players.index')" :current="request()->routeIs('players.*')" wire:navigate>
-                        {{ __('Players') }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="user" :href="route('referees.index')" :current="request()->routeIs('referees.*')" wire:navigate>
-                        {{ __('Referees') }}
-                    </flux:sidebar.item>
-                </flux:sidebar.group>
+                @if (! $isPlatformAdmin)
+                    <flux:sidebar.group :heading="__('Participants')" class="grid">
+                        <flux:sidebar.item icon="academic-cap" :href="route('sports.index')" :current="request()->routeIs('sports.*')" wire:navigate>
+                            {{ __('Sports') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="tag" :href="route('categories.index')" :current="request()->routeIs('categories.*')" wire:navigate>
+                            {{ __('Categories') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="shield-check" :href="route('teams.index')" :current="request()->routeIs('teams.*')" wire:navigate>
+                            {{ __('Teams') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="users" :href="route('players.index')" :current="request()->routeIs('players.*')" wire:navigate>
+                            {{ __('Players') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="user" :href="route('referees.index')" :current="request()->routeIs('referees.*')" wire:navigate>
+                            {{ __('Referees') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
 
-                <flux:sidebar.group :heading="__('Locations')" class="grid">
-                    <flux:sidebar.item icon="building-office-2" :href="route('venues.index')" :current="request()->routeIs('venues.*')" wire:navigate>
-                        {{ __('Venues') }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="map" :href="route('fields.index')" :current="request()->routeIs('fields.*')" wire:navigate>
-                        {{ __('Fields') }}
-                    </flux:sidebar.item>
-                </flux:sidebar.group>
+                    <flux:sidebar.group :heading="__('Locations')" class="grid">
+                        <flux:sidebar.item icon="building-office-2" :href="route('venues.index')" :current="request()->routeIs('venues.*')" wire:navigate>
+                            {{ __('Venues') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="map" :href="route('fields.index')" :current="request()->routeIs('fields.*')" wire:navigate>
+                            {{ __('Fields') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
 
-                <flux:sidebar.group :heading="__('Screens')" class="grid">
-                    <flux:sidebar.item icon="tv" :href="$currentOrganizationSlug !== null ? route('scores.public', ['organization' => $currentOrganizationSlug]) : '#'" :current="request()->routeIs('scores.public')">
-                        {{ __('Public Score Screen') }}
-                    </flux:sidebar.item>
-                </flux:sidebar.group>
+                    <flux:sidebar.group :heading="__('Screens')" class="grid">
+                        <flux:sidebar.item icon="tv" :href="$currentOrganizationSlug !== null ? route('scores.public', ['organization' => $currentOrganizationSlug]) : '#'" :current="request()->routeIs('scores.public')">
+                            {{ __('Public Score Screen') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+                @endif
             </flux:sidebar.nav>
 
             <flux:spacer />
@@ -113,6 +126,19 @@
                         <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
                             {{ __('Settings') }}
                         </flux:menu.item>
+                        @if (session()->has('impersonator_id'))
+                            <form method="POST" action="{{ route('admin.impersonation.stop') }}" class="w-full">
+                                @csrf
+                                <flux:menu.item
+                                    as="button"
+                                    type="submit"
+                                    icon="arrow-uturn-left"
+                                    class="w-full cursor-pointer"
+                                >
+                                    {{ __('Stop impersonation') }}
+                                </flux:menu.item>
+                            </form>
+                        @endif
                     </flux:menu.radio.group>
 
                     <flux:menu.separator />

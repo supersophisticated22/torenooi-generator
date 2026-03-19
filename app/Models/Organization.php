@@ -31,6 +31,7 @@ class Organization extends Model
         'selected_plan',
         'subscription_status',
         'subscription_ends_at',
+        'disabled_at',
     ];
 
     protected function casts(): array
@@ -41,6 +42,7 @@ class Organization extends Model
             'subscription_plan' => BillingPlan::class,
             'selected_plan' => BillingPlan::class,
             'subscription_status' => SubscriptionStatus::class,
+            'disabled_at' => 'datetime',
         ];
     }
 

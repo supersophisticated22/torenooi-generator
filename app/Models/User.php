@@ -30,6 +30,7 @@ class User extends Authenticatable
         'password',
         'current_organization_id',
         'is_platform_admin',
+        'disabled_at',
         'onboarding_status',
     ];
 
@@ -56,6 +57,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_platform_admin' => 'bool',
+            'disabled_at' => 'datetime',
             'onboarding_status' => OnboardingStatus::class,
         ];
     }
@@ -74,13 +76,17 @@ class User extends Authenticatable
 
     public function currentOrganization(): ?Organization
     {
-        $organization = $this->currentOrganizationRelation()->first();
+        $organization = $this->currentOrganizationRelation()
+            ->whereNull('disabled_at')
+            ->first();
 
         if ($organization !== null && $this->belongsToOrganizationId($organization->id)) {
             return $organization;
         }
 
-        return $this->organizations()->first();
+        return $this->organizations()
+            ->whereNull('organizations.disabled_at')
+            ->first();
     }
 
     public function belongsToOrganizationId(int $organizationId): bool
@@ -91,6 +97,7 @@ class User extends Authenticatable
 
         return $this->organizations()
             ->whereKey($organizationId)
+            ->whereNull('organizations.disabled_at')
             ->exists();
     }
 
@@ -107,6 +114,7 @@ class User extends Authenticatable
 
         $role = $this->organizations()
             ->whereKey($organizationId)
+            ->whereNull('organizations.disabled_at')
             ->value('organization_user.role');
 
         if (! is_string($role) || $role === '') {
@@ -141,5 +149,10 @@ class User extends Authenticatable
             ->take(2)
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
+    }
+
+    public function isDisabled(): bool
+    {
+        return $this->disabled_at !== null;
     }
 }

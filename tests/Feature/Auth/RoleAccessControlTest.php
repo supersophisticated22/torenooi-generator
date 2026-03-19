@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Domain\Auth\Enums\OrganizationRole;
+use App\Domain\Billing\Enums\BillingPlan;
+use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Tournaments\Enums\EventStatus;
 use App\Domain\Tournaments\Enums\MatchStatus;
 use App\Domain\Tournaments\Enums\TournamentStatus;
@@ -22,6 +24,12 @@ use Livewire\Livewire;
 
 function createUserWithRole(Organization $organization, OrganizationRole $role, bool $isPlatformAdmin = false): User
 {
+    $organization->update([
+        'selected_plan' => BillingPlan::Starter,
+        'subscription_plan' => BillingPlan::Starter,
+        'subscription_status' => SubscriptionStatus::Active,
+    ]);
+
     $user = User::factory()->create([
         'is_platform_admin' => $isPlatformAdmin,
     ]);
@@ -168,21 +176,14 @@ test('viewer and referee cannot enter match scores', function (): void {
     expect(MatchResult::query()->where('match_id', $match->id)->exists())->toBeFalse();
 });
 
-test('platform admin bypasses organization role restrictions', function (): void {
+test('platform admin is redirected to admin area on tenant routes', function (): void {
     $organization = Organization::factory()->create();
     $user = createUserWithRole($organization, OrganizationRole::Viewer, isPlatformAdmin: true);
 
     $this->actingAs($user);
 
-    Livewire::test(SportCreate::class)
-        ->set('name', 'Basketball')
-        ->set('win_points', 2)
-        ->set('draw_points', 1)
-        ->set('loss_points', 0)
-        ->call('save')
-        ->assertHasNoErrors();
-
-    expect(Sport::query()->where('organization_id', $organization->id)->where('name', 'Basketball')->exists())->toBeTrue();
+    $this->get(route('sports.create'))
+        ->assertRedirect(route('admin.organizations.index'));
 });
 
 test('public score page remains publicly accessible', function (): void {

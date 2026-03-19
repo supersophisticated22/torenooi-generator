@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\StartUserImpersonationController;
+use App\Http\Controllers\Admin\StopUserImpersonationController;
 use App\Http\Controllers\Billing\CreateBillingPortalSessionController;
 use App\Http\Controllers\Billing\CreateCheckoutSessionController;
 use App\Http\Controllers\Billing\StripeWebhookController;
@@ -7,6 +9,16 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Onboarding\CheckoutCancelController;
 use App\Http\Controllers\Onboarding\CheckoutSuccessController;
 use App\Http\Controllers\Onboarding\StartCheckoutController;
+use App\Livewire\Admin\AdminUsers\Create as AdminUsersCreate;
+use App\Livewire\Admin\AdminUsers\Edit as AdminUsersEdit;
+use App\Livewire\Admin\AdminUsers\Index as AdminUsersIndex;
+use App\Livewire\Admin\Organizations\Create as AdminOrganizationsCreate;
+use App\Livewire\Admin\Organizations\Edit as AdminOrganizationsEdit;
+use App\Livewire\Admin\Organizations\Index as AdminOrganizationsIndex;
+use App\Livewire\Admin\Subscriptions\Index as AdminSubscriptionsIndex;
+use App\Livewire\Admin\Users\Create as AdminUsersCreateUser;
+use App\Livewire\Admin\Users\Edit as AdminUsersEditUser;
+use App\Livewire\Admin\Users\Index as AdminUsersIndexUser;
 use App\Livewire\Categories\Create as CategoriesCreate;
 use App\Livewire\Categories\Edit as CategoriesEdit;
 use App\Livewire\Categories\Index as CategoriesIndex;
@@ -78,7 +90,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('onboarding/checkout/cancel', CheckoutCancelController::class)->name('onboarding.checkout.cancel');
 });
 
-Route::middleware(['auth', 'organization', 'verified', 'onboarding'])->group(function () {
+Route::middleware(['auth', 'tenant-area', 'organization', 'verified', 'onboarding'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     Route::livewire('sports', SportsIndex::class)->name('sports.index');
@@ -123,6 +135,29 @@ Route::middleware(['auth', 'organization', 'verified', 'onboarding'])->group(fun
 
     Route::post('billing/checkout/{plan}', CreateCheckoutSessionController::class)->name('billing.checkout');
     Route::post('billing/portal', CreateBillingPortalSessionController::class)->name('billing.portal');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::redirect('admin/saas', 'admin/organizations')->name('admin.saas.index');
+
+    Route::middleware('can:manage-platform-saas')->group(function () {
+        Route::livewire('admin/organizations', AdminOrganizationsIndex::class)->name('admin.organizations.index');
+        Route::livewire('admin/organizations/create', AdminOrganizationsCreate::class)->name('admin.organizations.create');
+        Route::livewire('admin/organizations/{organization}/edit', AdminOrganizationsEdit::class)->name('admin.organizations.edit');
+
+        Route::livewire('admin/users', AdminUsersIndexUser::class)->name('admin.users.index');
+        Route::livewire('admin/users/create', AdminUsersCreateUser::class)->name('admin.users.create');
+        Route::livewire('admin/users/{user}/edit', AdminUsersEditUser::class)->name('admin.users.edit');
+
+        Route::livewire('admin/admin-users', AdminUsersIndex::class)->name('admin.admin-users.index');
+        Route::livewire('admin/admin-users/create', AdminUsersCreate::class)->name('admin.admin-users.create');
+        Route::livewire('admin/admin-users/{user}/edit', AdminUsersEdit::class)->name('admin.admin-users.edit');
+
+        Route::livewire('admin/subscriptions', AdminSubscriptionsIndex::class)->name('admin.subscriptions.index');
+    });
+
+    Route::post('admin/impersonate/stop', StopUserImpersonationController::class)->name('admin.impersonation.stop');
+    Route::post('admin/impersonate/{user}', StartUserImpersonationController::class)->name('admin.impersonation.start');
 });
 
 Route::post('stripe/webhook', StripeWebhookController::class)

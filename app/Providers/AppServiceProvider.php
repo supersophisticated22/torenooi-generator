@@ -103,5 +103,13 @@ class AppServiceProvider extends ServiceProvider
 
             return $user->hasOrganizationRole($organization->id, OrganizationRole::OrganizationAdmin);
         });
+
+        Gate::define('manage-platform-saas', function (User $user): bool {
+            return $user->isPlatformAdmin();
+        });
+
+        Gate::define('manage-platform-admin-users', function (User $user): bool {
+            return $user->isPlatformAdmin();
+        });
     }
 }

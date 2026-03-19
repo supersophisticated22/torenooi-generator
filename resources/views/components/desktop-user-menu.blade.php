@@ -22,6 +22,19 @@
             <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
                 {{ __('Settings') }}
             </flux:menu.item>
+            @if (session()->has('impersonator_id'))
+                <form method="POST" action="{{ route('admin.impersonation.stop') }}" class="w-full">
+                    @csrf
+                    <flux:menu.item
+                        as="button"
+                        type="submit"
+                        icon="arrow-uturn-left"
+                        class="w-full cursor-pointer"
+                    >
+                        {{ __('Stop impersonation') }}
+                    </flux:menu.item>
+                </form>
+            @endif
             <form method="POST" action="{{ route('logout') }}" class="w-full">
                 @csrf
                 <flux:menu.item
