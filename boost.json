@@ -3,7 +3,6 @@
         "codex"
     ],
     "guidelines": true,
-    "herd_mcp": true,
     "mcp": true,
     "nightwatch_mcp": false,
     "packages": [
@@ -11,6 +10,7 @@
     ],
     "sail": false,
     "skills": [
+        "laravel-best-practices",
         "fluxui-development",
         "livewire-development",
         "volt-development",
