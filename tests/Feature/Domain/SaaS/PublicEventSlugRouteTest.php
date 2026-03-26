@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Auth\Enums\OrganizationRole;
 use App\Livewire\Events\Create as EventCreate;
+use App\Livewire\Events\Edit as EventEdit;
 use App\Models\Event;
 use App\Models\Organization;
 use App\Models\User;
@@ -77,4 +78,42 @@ it('generates unique event slugs within one organization', function (): void {
         ->all();
 
     expect($slugs)->toBe(['city-finals', 'city-finals-2']);
+});
+
+it('resolves tenant edit route for event id instead of public event slug route', function (): void {
+    $organization = Organization::factory()->create(['slug' => 'acme-sports']);
+    $user = User::factory()->create();
+
+    $user->organizations()->attach($organization->id, ['role' => OrganizationRole::OrganizationAdmin->value]);
+    $user->update(['current_organization_id' => $organization->id]);
+
+    $event = Event::factory()->create([
+        'organization_id' => $organization->id,
+        'name' => 'Tenant Event',
+    ]);
+
+    $this->withoutMiddleware();
+    $this->actingAs($user);
+
+    $this->get(route('events.edit', $event))
+        ->assertOk();
+
+    Livewire::test(EventEdit::class, ['event' => $event])
+        ->assertSet('eventId', $event->id);
+});
+
+it('returns 404 for private event public slug route', function (): void {
+    $organization = Organization::factory()->create([
+        'slug' => 'private-sports',
+    ]);
+
+    $event = Event::factory()->create([
+        'organization_id' => $organization->id,
+        'name' => 'Private Summer Cup',
+        'slug' => 'private-summer-cup',
+        'is_private' => true,
+    ]);
+
+    $this->get(route('events.public.show', ['organization' => $organization->slug, 'eventSlug' => $event->slug]))
+        ->assertNotFound();
 });

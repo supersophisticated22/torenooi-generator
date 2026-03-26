@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Events;
 
+use App\Domain\Billing\Services\SubscriptionLimits;
 use App\Domain\Tournaments\Enums\EventStatus;
 use App\Domain\Tournaments\Services\GenerateEventSlug;
 use App\Models\Event;
@@ -24,6 +25,8 @@ class Edit extends Component
 
     public string $status = 'draft';
 
+    public bool $is_private = false;
+
     public function mount(Event $event): void
     {
         Gate::authorize('manage-tenant-record', $event);
@@ -33,6 +36,7 @@ class Edit extends Component
         $this->starts_at = $event->starts_at?->format('Y-m-d\TH:i');
         $this->ends_at = $event->ends_at?->format('Y-m-d\TH:i');
         $this->status = $event->status->value;
+        $this->is_private = $event->is_private;
     }
 
     public function save(): void
@@ -45,7 +49,14 @@ class Edit extends Component
             'starts_at' => ['nullable', 'date'],
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
             'status' => ['required', 'in:'.implode(',', array_column(EventStatus::cases(), 'value'))],
+            'is_private' => ['boolean'],
         ]);
+
+        if ($validated['is_private'] && ! app(SubscriptionLimits::class)->hasPaidSubscription($event->organization)) {
+            $this->addError('is_private', 'Private events are available on paid plans only.');
+
+            return;
+        }
 
         $event->update([
             'name' => $validated['name'],
@@ -53,6 +64,7 @@ class Edit extends Component
             'starts_at' => $this->normalizeDateTime($validated['starts_at']),
             'ends_at' => $this->normalizeDateTime($validated['ends_at']),
             'status' => $validated['status'],
+            'is_private' => $validated['is_private'],
         ]);
 
         $this->redirect(route('events.index', absolute: false));

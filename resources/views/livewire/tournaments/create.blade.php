@@ -54,6 +54,9 @@
                                 </flux:modal.trigger>
                             </div>
                         </div>
+                        <p class="text-sm text-[#5f6b88]">
+                            {{ __('Define the tournament identity and schedule. Choose event, sport, and category before adding participants.') }}
+                        </p>
 
                         <flux:input wire:model="name" :label="__('Tournament name')" type="text" required autofocus placeholder="{{ __('e.g. Summer Pro Invitational 2026') }}" />
 
@@ -99,16 +102,21 @@
                                 </flux:modal.trigger>
                             </div>
                         </div>
+                        <p class="text-sm text-[#5f6b88]">
+                            {{ __('Add the teams that will participate. You can add them manually or import CSV on paid plans.') }}
+                        </p>
 
                         <div class="rounded-xl border border-[#d8dbe5] bg-[#f7f8fc] p-4">
-                            <div class="grid gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto]">
+                            <p class="mb-3 text-sm text-[#5f6b88]">
+                                {{ __('Seed sets ranking in the draw. Lower numbers (1, 2, 3) are higher-ranked participants and are placed to avoid meeting too early. Drag teams up or down to set the seed order.') }}
+                            </p>
+                            <div class="grid gap-3 sm:grid-cols-[minmax(0,2fr)_auto]">
                                 <flux:select wire:model="participant_team_id" :label="__('Team')">
                                     <option value="">{{ __('Select team') }}</option>
                                     @foreach ($this->availableParticipantTeams as $team)
                                         <option value="{{ $team->id }}">{{ $team->name }}</option>
                                     @endforeach
                                 </flux:select>
-                                <flux:input wire:model="participant_seed" :label="__('Seed (optional)')" type="number" min="1" max="999" />
                                 <div class="flex items-end">
                                     <flux:button variant="primary" wire:click="addParticipantTeam">{{ __('Add Entry') }}</flux:button>
                                 </div>
@@ -167,18 +175,23 @@
                                         <th class="px-4 py-3">{{ __('Actions') }}</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white text-[#1f2537]">
+                                <tbody class="bg-white text-[#1f2537]" wire:sort="reorderParticipantEntry">
                                     @forelse ($this->participantEntriesView as $entry)
-                                        <tr class="border-t border-[#e8ebf2]">
+                                        <tr wire:sort:item="{{ $entry['team_id'] }}" class="border-t border-[#e8ebf2]">
                                             <td class="px-4 py-3">
-                                                <p class="font-medium">{{ $entry['team_name'] }}</p>
-                                                @if ($entry['team_short_name'])
-                                                    <p class="text-xs text-[#63708d]">{{ $entry['team_short_name'] }}</p>
-                                                @endif
+                                                <div class="flex items-center gap-3">
+                                                    <button type="button" wire:sort:handle class="cursor-grab rounded-md border border-[#d8dbe5] bg-white px-2 py-1 text-xs text-[#5f6b88] active:cursor-grabbing">
+                                                        {{ __('Drag') }}
+                                                    </button>
+                                                    <div>
+                                                        <p class="font-medium">{{ $entry['team_name'] }}</p>
+                                                        @if ($entry['team_short_name'])
+                                                            <p class="text-xs text-[#63708d]">{{ $entry['team_short_name'] }}</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
                                             </td>
-                                            <td class="px-4 py-3">
-                                                <flux:input wire:model.blur="participant_entries.{{ $entry['team_id'] }}.seed" type="number" min="1" max="999" class="max-w-28" />
-                                            </td>
+                                            <td class="px-4 py-3 text-sm font-semibold text-[#1f2537]">{{ $entry['seed'] }}</td>
                                             <td class="px-4 py-3">
                                                 <flux:button size="sm" variant="danger" wire:click="removeParticipantTeam({{ $entry['team_id'] }})">{{ __('Remove') }}</flux:button>
                                             </td>
@@ -197,6 +210,9 @@
                 @if ($currentStep === 3)
                     <div class="space-y-5">
                         <h2 class="text-2xl font-semibold text-[#1f2537]">{{ __('Rules & Seeding') }}</h2>
+                        <p class="text-sm text-[#5f6b88]">
+                            {{ __('Configure competition format and match rules. These settings drive bracket generation and match timings.') }}
+                        </p>
 
                         <div class="grid gap-4 sm:grid-cols-3">
                             <flux:select wire:model="type" :label="__('Type')" required>
@@ -251,6 +267,9 @@
                 @if ($currentStep === 4)
                     <div class="space-y-5">
                         <h2 class="text-2xl font-semibold text-[#1f2537]">{{ __('Review & Create') }}</h2>
+                        <p class="text-sm text-[#5f6b88]">
+                            {{ __('Review all settings before creating. Once saved, participants and rules are stored together.') }}
+                        </p>
                         <div class="grid gap-3 sm:grid-cols-2">
                             <div class="rounded-xl border border-[#d8dbe5] bg-[#f7f8fc] p-4">
                                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#63708d]">{{ __('Tournament') }}</p>

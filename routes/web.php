@@ -65,7 +65,6 @@ Route::view('/', 'welcome')->name('home');
 Route::livewire('scores/{organization:slug}', PublicScoreScreen::class)->name('scores.public');
 Route::livewire('scores/{organization:slug}/events/{eventSlug}', PublicEventScreen::class)->name('scores.public.event');
 Route::livewire('scores/{organization:slug}/tournaments/{tournament}', PublicTournamentScreen::class)->name('scores.public.tournament');
-Route::livewire('events/{organization:slug}/{eventSlug}', PublicEventScreen::class)->name('events.public.show');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('onboarding', function (Request $request, OnboardingFlow $onboardingFlow) {
@@ -159,6 +158,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('admin/impersonate/stop', StopUserImpersonationController::class)->name('admin.impersonation.stop');
     Route::post('admin/impersonate/{user}', StartUserImpersonationController::class)->name('admin.impersonation.start');
 });
+
+Route::livewire('events/{organization:slug}/{eventSlug}', PublicEventScreen::class)->name('events.public.show');
 
 Route::post('stripe/webhook', StripeWebhookController::class)
     ->withoutMiddleware([VerifyCsrfToken::class])

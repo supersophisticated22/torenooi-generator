@@ -41,6 +41,7 @@ class Event extends Component
         $event = EventModel::query()
             ->where('organization_id', $organization->id)
             ->where('slug', $eventSlug)
+            ->where('is_private', false)
             ->firstOrFail();
 
         $this->organizationId = (int) $organization->id;
@@ -52,6 +53,7 @@ class Event extends Component
     {
         return EventModel::query()
             ->where('organization_id', $this->organizationId)
+            ->where('is_private', false)
             ->with('tournaments.sport')
             ->findOrFail($this->eventId);
     }

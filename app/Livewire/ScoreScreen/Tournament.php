@@ -30,7 +30,13 @@ class Tournament extends Component
 
     public function mount(Organization $organization, TournamentModel $tournament): void
     {
-        if ((int) $tournament->organization_id !== (int) $organization->id) {
+        $isAccessibleTournament = TournamentModel::query()
+            ->where('id', $tournament->id)
+            ->where('organization_id', $organization->id)
+            ->whereHas('event', fn (Builder $query): Builder => $query->where('is_private', false))
+            ->exists();
+
+        if (! $isAccessibleTournament) {
             abort(404);
         }
 
@@ -43,6 +49,7 @@ class Tournament extends Component
     {
         return TournamentModel::query()
             ->where('organization_id', $this->organizationId)
+            ->whereHas('event', fn (Builder $query): Builder => $query->where('is_private', false))
             ->with(['event', 'sport', 'entries.team'])
             ->findOrFail($this->tournamentId);
     }

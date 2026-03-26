@@ -51,6 +51,7 @@ class Index extends Component
     {
         return Event::query()
             ->where('organization_id', $this->organizationId)
+            ->where('is_private', false)
             ->whereHas('tournaments.matches')
             ->orderBy('name')
             ->get();
@@ -61,7 +62,11 @@ class Index extends Component
     {
         return Sport::query()
             ->where('organization_id', $this->organizationId)
-            ->whereHas('tournaments.matches')
+            ->whereHas('tournaments', function (Builder $query): Builder {
+                return $query
+                    ->whereHas('event', fn (Builder $eventQuery): Builder => $eventQuery->where('is_private', false))
+                    ->whereHas('matches');
+            })
             ->orderBy('name')
             ->get();
     }
@@ -71,7 +76,9 @@ class Index extends Component
     {
         return Venue::query()
             ->where('organization_id', $this->organizationId)
-            ->whereHas('fields.matches')
+            ->whereHas('fields.matches', function (Builder $query): Builder {
+                return $query->whereHas('tournament.event', fn (Builder $eventQuery): Builder => $eventQuery->where('is_private', false));
+            })
             ->orderBy('name')
             ->get();
     }
@@ -82,7 +89,9 @@ class Index extends Component
         return Field::query()
             ->where('organization_id', $this->organizationId)
             ->when($this->venue_id !== null, fn (Builder $query): Builder => $query->where('venue_id', $this->venue_id))
-            ->whereHas('matches')
+            ->whereHas('matches', function (Builder $query): Builder {
+                return $query->whereHas('tournament.event', fn (Builder $eventQuery): Builder => $eventQuery->where('is_private', false));
+            })
             ->orderBy('name')
             ->get();
     }
@@ -92,6 +101,7 @@ class Index extends Component
     {
         return Tournament::query()
             ->where('organization_id', $this->organizationId)
+            ->whereHas('event', fn (Builder $query): Builder => $query->where('is_private', false))
             ->when($this->event_id !== null, fn (Builder $query): Builder => $query->where('event_id', $this->event_id))
             ->when($this->sport_id !== null, fn (Builder $query): Builder => $query->where('sport_id', $this->sport_id))
             ->whereHas('matches')
@@ -195,6 +205,7 @@ class Index extends Component
         if ($this->tournament_id !== null) {
             return Tournament::query()
                 ->where('organization_id', $this->organizationId)
+                ->whereHas('event', fn (Builder $query): Builder => $query->where('is_private', false))
                 ->find($this->tournament_id);
         }
 
@@ -215,6 +226,7 @@ class Index extends Component
     {
         return TournamentMatch::query()
             ->where('organization_id', $this->organizationId)
+            ->whereHas('tournament.event', fn (Builder $query): Builder => $query->where('is_private', false))
             ->with([
                 'tournament.event',
                 'tournament.sport',

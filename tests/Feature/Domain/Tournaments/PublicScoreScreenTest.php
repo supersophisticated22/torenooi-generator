@@ -354,3 +354,108 @@ it('does not expose other organization data on public score screen', function ()
         ->assertDontSee('Org B Team')
         ->assertDontSee('Org A Team');
 });
+
+it('does not show private event data on public score screen', function (): void {
+    $organization = Organization::factory()->create();
+
+    $sport = Sport::factory()->create([
+        'organization_id' => $organization->id,
+        'slug' => 'private-visibility-sport',
+    ]);
+
+    $publicEvent = Event::factory()->create([
+        'organization_id' => $organization->id,
+        'name' => 'Public Event Visible',
+        'is_private' => false,
+    ]);
+
+    $privateEvent = Event::factory()->create([
+        'organization_id' => $organization->id,
+        'name' => 'Private Event Hidden',
+        'is_private' => true,
+    ]);
+
+    $publicTournament = Tournament::factory()->create([
+        'organization_id' => $organization->id,
+        'event_id' => $publicEvent->id,
+        'sport_id' => $sport->id,
+        'category_id' => null,
+        'name' => 'Public Visibility Tournament',
+        'type' => TournamentType::HalfCompetition,
+        'status' => TournamentStatus::Scheduled,
+    ]);
+
+    $privateTournament = Tournament::factory()->create([
+        'organization_id' => $organization->id,
+        'event_id' => $privateEvent->id,
+        'sport_id' => $sport->id,
+        'category_id' => null,
+        'name' => 'Private Visibility Tournament',
+        'type' => TournamentType::HalfCompetition,
+        'status' => TournamentStatus::Scheduled,
+    ]);
+
+    $publicTeamA = Team::factory()->create([
+        'organization_id' => $organization->id,
+        'sport_id' => $sport->id,
+        'category_id' => null,
+        'name' => 'Public Team A',
+    ]);
+
+    $publicTeamB = Team::factory()->create([
+        'organization_id' => $organization->id,
+        'sport_id' => $sport->id,
+        'category_id' => null,
+        'name' => 'Public Team B',
+    ]);
+
+    $privateTeamA = Team::factory()->create([
+        'organization_id' => $organization->id,
+        'sport_id' => $sport->id,
+        'category_id' => null,
+        'name' => 'Private Team A',
+    ]);
+
+    $privateTeamB = Team::factory()->create([
+        'organization_id' => $organization->id,
+        'sport_id' => $sport->id,
+        'category_id' => null,
+        'name' => 'Private Team B',
+    ]);
+
+    TournamentMatch::factory()->create([
+        'organization_id' => $organization->id,
+        'tournament_id' => $publicTournament->id,
+        'pool_id' => null,
+        'home_team_id' => $publicTeamA->id,
+        'away_team_id' => $publicTeamB->id,
+        'field_id' => null,
+        'referee_id' => null,
+        'starts_at' => now()->addHour(),
+        'status' => MatchStatus::Scheduled,
+    ]);
+
+    TournamentMatch::factory()->create([
+        'organization_id' => $organization->id,
+        'tournament_id' => $privateTournament->id,
+        'pool_id' => null,
+        'home_team_id' => $privateTeamA->id,
+        'away_team_id' => $privateTeamB->id,
+        'field_id' => null,
+        'referee_id' => null,
+        'starts_at' => now()->addHours(2),
+        'status' => MatchStatus::Scheduled,
+    ]);
+
+    $this->get(route('scores.public', ['organization' => $organization->slug]))
+        ->assertOk()
+        ->assertSee('Public Event Visible')
+        ->assertSee('Public Team A')
+        ->assertDontSee('Private Event Hidden')
+        ->assertDontSee('Private Team A');
+
+    Livewire::withQueryParams(['event' => $privateEvent->id])
+        ->test(PublicScoreScreen::class, ['organization' => $organization])
+        ->assertDontSee('Private Team A')
+        ->assertDontSee('Public Team A');
+});

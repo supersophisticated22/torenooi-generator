@@ -27,6 +27,7 @@ class EventFactory extends Factory
             'starts_at' => $start,
             'ends_at' => $end,
             'status' => EventStatus::Draft,
+            'is_private' => false,
         ];
     }
 }

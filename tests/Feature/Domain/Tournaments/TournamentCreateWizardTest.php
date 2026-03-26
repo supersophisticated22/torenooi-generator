@@ -64,24 +64,28 @@ it('validates and progresses through wizard steps before creating tournament wit
         ->call('goToNextStep')
         ->assertHasErrors(['name', 'event_id', 'sport_id'])
         ->assertSet('currentStep', 1)
+        ->assertSee('Define the tournament identity and schedule.')
         ->set('name', 'Wizard Cup')
         ->set('event_id', $event->id)
         ->set('sport_id', $sport->id)
         ->set('category_id', $category->id)
         ->call('goToNextStep')
         ->assertSet('currentStep', 2)
+        ->assertSee('Add the teams that will participate.')
+        ->assertSee('Seed sets ranking in the draw.')
+        ->assertSee('Drag teams up or down to set the seed order.')
         ->set('participant_team_id', $teamOne->id)
-        ->set('participant_seed', 1)
         ->call('addParticipantTeam')
         ->set('participant_team_id', $teamTwo->id)
-        ->set('participant_seed', 2)
         ->call('addParticipantTeam')
         ->call('goToNextStep')
         ->assertSet('currentStep', 3)
+        ->assertSee('Configure competition format and match rules.')
         ->set('type', TournamentType::HalfCompetition->value)
         ->set('status', TournamentStatus::Draft->value)
         ->call('goToNextStep')
         ->assertSet('currentStep', 4)
+        ->assertSee('Review all settings before creating.')
         ->call('save')
         ->assertHasNoErrors();
 
@@ -190,4 +194,37 @@ it('imports csv participants for paid subscriptions and reports row errors', fun
         ->first();
 
     expect($newTeam)->not->toBeNull();
+});
+
+it('reorders participant seeds when teams are dragged', function (): void {
+    $sport = Sport::factory()->create([
+        'organization_id' => $this->organization->id,
+        'slug' => 'wizard-sport-reorder',
+    ]);
+
+    $teamOne = Team::factory()->create([
+        'organization_id' => $this->organization->id,
+        'sport_id' => $sport->id,
+        'category_id' => null,
+        'name' => 'Order Team One',
+    ]);
+
+    $teamTwo = Team::factory()->create([
+        'organization_id' => $this->organization->id,
+        'sport_id' => $sport->id,
+        'category_id' => null,
+        'name' => 'Order Team Two',
+    ]);
+
+    Livewire::test(TournamentCreate::class)
+        ->set('sport_id', $sport->id)
+        ->set('participant_team_id', $teamOne->id)
+        ->call('addParticipantTeam')
+        ->set('participant_team_id', $teamTwo->id)
+        ->call('addParticipantTeam')
+        ->assertSet('participant_entries.'.$teamOne->id.'.seed', 1)
+        ->assertSet('participant_entries.'.$teamTwo->id.'.seed', 2)
+        ->call('reorderParticipantEntry', $teamTwo->id, 0)
+        ->assertSet('participant_entries.'.$teamTwo->id.'.seed', 1)
+        ->assertSet('participant_entries.'.$teamOne->id.'.seed', 2);
 });

@@ -22,6 +22,7 @@ class Event extends Model
         'starts_at',
         'ends_at',
         'status',
+        'is_private',
     ];
 
     protected function casts(): array
@@ -30,6 +31,7 @@ class Event extends Model
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'status' => EventStatus::class,
+            'is_private' => 'boolean',
         ];
     }
 

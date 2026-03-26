@@ -198,7 +198,6 @@ class Create extends Component
                 'required',
                 Rule::exists('teams', 'id')->where('organization_id', $organization->id),
             ],
-            'participant_seed' => ['nullable', 'integer', 'min:1', 'max:999'],
         ]);
 
         $team = Team::query()
@@ -227,8 +226,9 @@ class Create extends Component
 
         $this->participant_entries[$teamKey] = [
             'team_id' => $team->id,
-            'seed' => $validated['participant_seed'],
+            'seed' => null,
         ];
+        $this->resequenceParticipantSeeds();
 
         $this->participant_team_id = null;
         $this->participant_seed = null;
@@ -237,6 +237,42 @@ class Create extends Component
     public function removeParticipantTeam(int $teamId): void
     {
         unset($this->participant_entries[(string) $teamId]);
+        $this->resequenceParticipantSeeds();
+    }
+
+    public function reorderParticipantEntry(int $teamId, int $position): void
+    {
+        $entries = array_values($this->participant_entries);
+
+        if ($entries === []) {
+            return;
+        }
+
+        $currentIndex = null;
+
+        foreach ($entries as $index => $entry) {
+            if ((int) $entry['team_id'] === $teamId) {
+                $currentIndex = $index;
+                break;
+            }
+        }
+
+        if ($currentIndex === null) {
+            return;
+        }
+
+        $targetIndex = max(0, min(count($entries) - 1, $position));
+
+        if ($targetIndex === $currentIndex) {
+            return;
+        }
+
+        $movedEntry = $entries[$currentIndex];
+        array_splice($entries, $currentIndex, 1);
+        array_splice($entries, $targetIndex, 0, [$movedEntry]);
+
+        $this->participant_entries = $this->entriesKeyedByTeamId($entries);
+        $this->resequenceParticipantSeeds();
     }
 
     public function createQuickEvent(): void
@@ -526,6 +562,7 @@ class Create extends Component
         $this->import_errors = $importErrors;
         $this->import_status = 'Imported '.$importedCount.' participant(s).';
         $this->participants_csv = null;
+        $this->resequenceParticipantSeeds();
     }
 
     public function save(): void
@@ -856,6 +893,34 @@ class Create extends Component
             MatchEventType::RedCard->value,
             MatchEventType::GreenCard->value,
         ];
+    }
+
+    /**
+     * @param  array<int, array{team_id:int,seed:int|null}>  $entries
+     * @return array<string, array{team_id:int,seed:int|null}>
+     */
+    private function entriesKeyedByTeamId(array $entries): array
+    {
+        $keyedEntries = [];
+
+        foreach ($entries as $entry) {
+            $keyedEntries[(string) $entry['team_id']] = $entry;
+        }
+
+        return $keyedEntries;
+    }
+
+    private function resequenceParticipantSeeds(): void
+    {
+        $entries = array_values($this->participant_entries);
+
+        foreach ($entries as $index => &$entry) {
+            $entry['seed'] = $index + 1;
+        }
+
+        unset($entry);
+
+        $this->participant_entries = $this->entriesKeyedByTeamId($entries);
     }
 
     private function buildCardPopupSettings(array $validated): array

@@ -12,6 +12,7 @@
                 <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
             @endforeach
         </flux:select>
+        <flux:checkbox wire:model="is_private" :label="__('Private event (hide on public score screens)')" />
 
         <div class="flex items-center gap-3">
             <flux:button variant="primary" type="submit">{{ __('Save') }}</flux:button>

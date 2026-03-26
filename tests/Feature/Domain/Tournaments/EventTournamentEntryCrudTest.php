@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Domain\Billing\Enums\BillingPlan;
+use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Tournaments\Enums\EventStatus;
 use App\Domain\Tournaments\Enums\TournamentFinalType;
 use App\Domain\Tournaments\Enums\TournamentStatus;
@@ -67,6 +69,67 @@ test('event can be created and updated', function (): void {
 
     expect($event->name)->toBe('Summer Cup Finals')
         ->and($event->status)->toBe(EventStatus::Active);
+});
+
+test('private event creation requires paid subscription', function (): void {
+    $this->organization->update([
+        'subscription_plan' => BillingPlan::Free,
+        'subscription_status' => SubscriptionStatus::Active,
+    ]);
+
+    Livewire::test(EventCreate::class)
+        ->set('name', 'Private Event Attempt')
+        ->set('status', EventStatus::Draft->value)
+        ->set('is_private', true)
+        ->call('save')
+        ->assertHasErrors(['is_private']);
+
+    expect(Event::query()
+        ->where('organization_id', $this->organization->id)
+        ->where('name', 'Private Event Attempt')
+        ->exists())->toBeFalse();
+});
+
+test('private event update requires paid subscription', function (): void {
+    $this->organization->update([
+        'subscription_plan' => BillingPlan::Free,
+        'subscription_status' => SubscriptionStatus::Active,
+    ]);
+
+    $event = Event::factory()->create([
+        'organization_id' => $this->organization->id,
+        'is_private' => false,
+    ]);
+
+    Livewire::test(EventEdit::class, ['event' => $event])
+        ->set('is_private', true)
+        ->call('save')
+        ->assertHasErrors(['is_private']);
+
+    $event->refresh();
+
+    expect($event->is_private)->toBeFalse();
+});
+
+test('paid subscriptions can create private events', function (): void {
+    $this->organization->update([
+        'subscription_plan' => BillingPlan::Starter,
+        'subscription_status' => SubscriptionStatus::Active,
+    ]);
+
+    Livewire::test(EventCreate::class)
+        ->set('name', 'Paid Private Event')
+        ->set('status', EventStatus::Published->value)
+        ->set('is_private', true)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $event = Event::query()
+        ->where('organization_id', $this->organization->id)
+        ->where('name', 'Paid Private Event')
+        ->firstOrFail();
+
+    expect($event->is_private)->toBeTrue();
 });
 
 test('tournament can be created and updated', function (): void {
@@ -222,4 +285,40 @@ test('tournament team entry can be attached and updated', function (): void {
     $entry->refresh();
 
     expect($entry->seed)->toBe(4);
+});
+
+test('tournament team entry allows empty seed and stores null', function (): void {
+    $event = Event::factory()->create([
+        'organization_id' => $this->organization->id,
+        'status' => EventStatus::Published,
+    ]);
+
+    $tournament = Tournament::factory()->create([
+        'organization_id' => $this->organization->id,
+        'event_id' => $event->id,
+        'sport_id' => $this->sport->id,
+        'category_id' => $this->category->id,
+        'type' => TournamentType::HalfCompetition,
+        'status' => TournamentStatus::Draft,
+    ]);
+
+    $team = Team::factory()->create([
+        'organization_id' => $this->organization->id,
+        'sport_id' => $this->sport->id,
+        'category_id' => $this->category->id,
+    ]);
+
+    Livewire::test(TournamentEntries::class, ['tournament' => $tournament])
+        ->set('team_id', $team->id)
+        ->set('seed', '')
+        ->call('addTeam')
+        ->assertHasNoErrors();
+
+    $entry = TournamentEntry::query()
+        ->where('organization_id', $this->organization->id)
+        ->where('tournament_id', $tournament->id)
+        ->where('team_id', $team->id)
+        ->firstOrFail();
+
+    expect($entry->seed)->toBeNull();
 });

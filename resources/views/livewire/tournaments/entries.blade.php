@@ -1,6 +1,9 @@
 <section class="w-full max-w-3xl">
     <flux:heading>{{ __('Tournament entries') }}: {{ $this->tournament->name }}</flux:heading>
     <flux:subheading>{{ __('Attach teams to this tournament') }}</flux:subheading>
+    <p class="mt-3 text-sm text-neutral-600 dark:text-neutral-400">
+        {{ __('Seed sets ranking in the draw. Lower numbers (1, 2, 3) are higher-ranked participants and are placed to avoid meeting too early. Leave empty if you do not use seeding.') }}
+    </p>
 
     <form wire:submit="addTeam" class="mt-6 grid gap-4 sm:grid-cols-3">
         <flux:select wire:model="team_id" :label="__('Team')" required>

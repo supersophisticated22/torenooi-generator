@@ -270,6 +270,31 @@ it('does not expose tournament of another organization on public tournament page
         ->assertNotFound();
 });
 
+it('does not expose tournament when parent event is private on public tournament page', function (): void {
+    $organization = Organization::factory()->create();
+
+    $sport = Sport::factory()->create([
+        'organization_id' => $organization->id,
+        'slug' => 'private-event-tournament-sport',
+    ]);
+
+    $privateEvent = Event::factory()->create([
+        'organization_id' => $organization->id,
+        'is_private' => true,
+    ]);
+
+    $privateTournament = Tournament::factory()->create([
+        'organization_id' => $organization->id,
+        'event_id' => $privateEvent->id,
+        'sport_id' => $sport->id,
+        'category_id' => null,
+        'name' => 'Private Event Tournament',
+    ]);
+
+    $this->get(route('scores.public.tournament', ['organization' => $organization->slug, 'tournament' => $privateTournament->id]))
+        ->assertNotFound();
+});
+
 it('shows and filters public event page by sport tournament and field', function (): void {
     $organization = Organization::factory()->create();
 
@@ -416,5 +441,18 @@ it('does not expose event of another organization on public event page', functio
     expect($eventA->id)->not->toBe($eventB->id);
 
     $this->get(route('scores.public.event', ['organization' => $organizationA->slug, 'eventSlug' => $eventB->slug]))
+        ->assertNotFound();
+});
+
+it('does not expose private event on public event page', function (): void {
+    $organization = Organization::factory()->create();
+
+    $event = Event::factory()->create([
+        'organization_id' => $organization->id,
+        'slug' => 'private-event-page',
+        'is_private' => true,
+    ]);
+
+    $this->get(route('scores.public.event', ['organization' => $organization->slug, 'eventSlug' => $event->slug]))
         ->assertNotFound();
 });

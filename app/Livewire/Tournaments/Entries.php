@@ -51,6 +51,12 @@ class Entries extends Component
             'seed' => ['nullable', 'integer', 'min:1', 'max:999'],
         ]);
 
+        $seed = $validated['seed'] ?? null;
+
+        if ($seed === '') {
+            $seed = null;
+        }
+
         if ($tournament->entries()->where('team_id', $validated['team_id'])->exists()) {
             $this->addError('team_id', 'This team is already entered in the tournament.');
 
@@ -61,7 +67,7 @@ class Entries extends Component
             'organization_id' => $organization->id,
             'team_id' => $validated['team_id'],
             'player_id' => null,
-            'seed' => $validated['seed'],
+            'seed' => $seed,
         ]);
 
         $this->team_id = null;
