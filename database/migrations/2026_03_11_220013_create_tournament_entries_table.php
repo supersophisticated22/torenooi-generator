@@ -29,15 +29,33 @@ return new class extends Migration
             return;
         }
 
-        DB::statement('ALTER TABLE tournament_entries ADD CONSTRAINT tournament_entries_exactly_one_participant CHECK ((team_id IS NULL) <> (player_id IS NULL))');
+        DB::unprepared(<<<'SQL'
+            CREATE TRIGGER tournament_entries_xor_insert
+            BEFORE INSERT ON tournament_entries
+            FOR EACH ROW
+            BEGIN
+                IF ((NEW.team_id IS NULL) = (NEW.player_id IS NULL)) THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Exactly one of team_id or player_id must be set';
+                END IF;
+            END;
+        SQL);
+
+        DB::unprepared(<<<'SQL'
+            CREATE TRIGGER tournament_entries_xor_update
+            BEFORE UPDATE ON tournament_entries
+            FOR EACH ROW
+            BEGIN
+                IF ((NEW.team_id IS NULL) = (NEW.player_id IS NULL)) THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Exactly one of team_id or player_id must be set';
+                END IF;
+            END;
+        SQL);
     }
 
     public function down(): void
     {
-        if (DB::getDriverName() === 'sqlite') {
-            DB::statement('DROP TRIGGER IF EXISTS tournament_entries_xor_insert');
-            DB::statement('DROP TRIGGER IF EXISTS tournament_entries_xor_update');
-        }
+        DB::statement('DROP TRIGGER IF EXISTS tournament_entries_xor_insert');
+        DB::statement('DROP TRIGGER IF EXISTS tournament_entries_xor_update');
 
         Schema::dropIfExists('tournament_entries');
     }
