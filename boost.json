@@ -1,18 +1,21 @@
 {
     "agents": [
-        "junie",
-        "cursor"
+        "codex"
     ],
     "guidelines": true,
-    "herd_mcp": false,
+    "herd_mcp": true,
     "mcp": true,
     "nightwatch_mcp": false,
+    "packages": [
+        "laravel/fortify"
+    ],
     "sail": false,
     "skills": [
         "fluxui-development",
         "livewire-development",
         "volt-development",
         "pest-testing",
-        "tailwindcss-development"
+        "tailwindcss-development",
+        "fortify-development"
     ]
 }
