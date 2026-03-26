@@ -7,7 +7,14 @@
         <title>Toernooigenerator</title>
 
         <link rel="icon" href="/cropped-favicon-32x32.gif" type="image/gif" sizes="32x32">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <link rel="apple-touch-icon" href="/cropped-favicon-32x32.gif">
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="Toernooigenerator">
+        <meta property="og:site_name" content="Toernooigenerator">
+        <meta property="og:image" content="{{ url('/cropped-favicon-32x32.gif') }}">
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:title" content="Toernooigenerator">
+        <meta name="twitter:image" content="{{ url('/cropped-favicon-32x32.gif') }}">
 
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="preconnect" href="https://fonts.googleapis.com">
