@@ -6,8 +6,7 @@
 
         <title>Toernooigenerator</title>
 
-        <link rel="icon" href="/favicon.ico" sizes="any">
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+        <link rel="icon" href="/cropped-favicon-32x32.gif" type="image/gif" sizes="32x32">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
         <script src="https://cdn.tailwindcss.com"></script>
